@@ -1767,6 +1767,19 @@
             
         </li>
     
+        <li class="chapter " data-level="1.9.3" data-path="bundles.html">
+            
+                <a href="bundles.html#multiple-sources-of-policy-and-data">
+            
+                    
+                    Multiple Sources
+            
+                </a>
+            
+
+            
+        </li>
+    
 
             </ul>
             
@@ -2300,7 +2313,7 @@ openssl x509 -req -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out s
 </code></pre>
 <p>Next, use the file below to deploy OPA as an admission controller.</p>
 <p><strong><a href="https://github.com/open-policy-agent/opa/blob/master/docs/book/tutorials/kubernetes-admission-control-validation/admission-controller.yaml" target="_blank">admission-controller.yaml</a></strong>:</p>
-<pre><code class="lang-yaml"><span class="hljs-comment"># Grant OPA/kube-mgmt read-only access to resources. This let&apos;s kube-mgmt</span>
+<pre><code class="lang-yaml"><span class="hljs-comment"># Grant OPA/kube-mgmt read-only access to resources. This lets kube-mgmt</span>
 <span class="hljs-comment"># replicate resources into OPA so they can be used in policies.</span>
 <span class="hljs-attr">kind:</span> ClusterRoleBinding
 <span class="hljs-attr">apiVersion:</span> rbac.authorization.k8s.io/v1
@@ -2380,7 +2393,7 @@ openssl x509 -req -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out s
         <span class="hljs-comment"># authentication and authorization on the daemon. See the Security page for</span>
         <span class="hljs-comment"># details: https://www.openpolicyagent.org/docs/security.html.</span>
 <span class="hljs-attr">        - name:</span> opa
-<span class="hljs-attr">          image:</span> openpolicyagent/opa:<span class="hljs-number">0.10</span><span class="hljs-number">.3</span>
+<span class="hljs-attr">          image:</span> openpolicyagent/opa:<span class="hljs-number">0.10</span><span class="hljs-number">.4</span>
 <span class="hljs-attr">          args:</span>
 <span class="hljs-bullet">            -</span> <span class="hljs-string">&quot;run&quot;</span>
 <span class="hljs-bullet">            -</span> <span class="hljs-string">&quot;--server&quot;</span>
@@ -2455,8 +2468,8 @@ webhooks:
         name: opa
 EOF
 </code></pre>
-<p>The generated configuration file inclues a base64 encoded representation of the CA certificate so that TLS connections can be established between the Kubernetes API server and OPA.</p>
-<p>Finally, register OPA as and admission controller:</p>
+<p>The generated configuration file includes a base64 encoded representation of the CA certificate so that TLS connections can be established between the Kubernetes API server and OPA.</p>
+<p>Finally, register OPA as an admission controller:</p>
 <pre><code class="lang-bash">kubectl apply <span class="hljs-_">-f</span> webhook-configuration.yaml
 </code></pre>
 <p>You can follow the OPA logs to see the webhook requests being issued by the Kubernetes API server:</p>
@@ -2560,10 +2573,10 @@ and the other will be rejected.</p>
 <pre><code class="lang-bash">kubectl create <span class="hljs-_">-f</span> ingress-ok.yaml -n production
 kubectl create <span class="hljs-_">-f</span> ingress-bad.yaml -n qa
 </code></pre>
-<p>The second Ingress is rejected because it&apos;s hostname does not match the whitelist in the <code>qa</code> namespace.</p>
+<p>The second Ingress is rejected because its hostname does not match the whitelist in the <code>qa</code> namespace.</p>
 <h3 id="6-modify-the-policy-and-exercise-the-changes">6. Modify the policy and exercise the changes</h3>
 <p>OPA allows you to modify policies on-the-fly without recompiling any of the services that offload policy decisions to it.</p>
-<p>To enforce the second half of the policy from the start of this tutorial you can load another policy into OPA that rejects Ingress objects in different namespaces from sharing the same hostname.</p>
+<p>To enforce the second half of the policy from the start of this tutorial you can load another policy into OPA that prevents Ingress objects in different namespaces from sharing the same hostname.</p>
 <p><a href="https://github.com/open-policy-agent/opa/blob/master/docs/book/tutorials/kubernetes-admission-control-validation/ingress-conflicts.rego" target="_blank">ingress-conflicts.rego</a>:</p>
 <pre><code class="lang-ruby">package kubernetes.admission
 
@@ -2583,7 +2596,7 @@ deny[msg] {
 <pre><code class="lang-bash">kubectl create configmap ingress-conflicts --from-file=ingress-conflicts.rego
 </code></pre>
 <p>The OPA sidecar annotates ConfigMaps containing policies to indicate if they
-were installed successfully. Verify the ConfigMap was installed successfully.</p>
+were installed successfully. Verify that the ConfigMap was installed successfully:</p>
 <pre><code>kubectl get configmap ingress-conflicts -o yaml
 </code></pre><p>Test that you cannot create an Ingress in another namespace with the same hostname as the one created earlier.</p>
 <p><strong>staging-namespace.yaml</strong>:</p>
@@ -2649,7 +2662,7 @@ satisfy changing operational requirements.</p>
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Kubernetes Admission Control","level":"2.6","depth":1,"next":{"title":"Terraform Testing","level":"2.7","depth":1,"path":"terraform.md","ref":"terraform.md","articles":[]},"previous":{"title":"Kafka Authorization","level":"2.5","depth":1,"path":"kafka-authorization.md","ref":"kafka-authorization.md","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":["header","addcssjs","collapsible-menu","custom-favicon","ga","-fontsettings","ace"],"pluginsConfig":{"collapsible-menu":{},"ace":{},"search":{},"layout":{"headerPath":"layouts/header.html"},"addcssjs":{"css":[],"js":[]},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"header":{},"highlight":{},"favicon":"images/favicon.png","custom-favicon":{},"ga":{"configuration":"auto","token":"UA-84550302-1"},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"kubernetes-admission-control.md","mtime":"2019-01-22T15:44:31.793Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2019-01-22T15:45:40.970Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Kubernetes Admission Control","level":"2.6","depth":1,"next":{"title":"Terraform Testing","level":"2.7","depth":1,"path":"terraform.md","ref":"terraform.md","articles":[]},"previous":{"title":"Kafka Authorization","level":"2.5","depth":1,"path":"kafka-authorization.md","ref":"kafka-authorization.md","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":["header","addcssjs","collapsible-menu","custom-favicon","ga","-fontsettings","ace"],"pluginsConfig":{"collapsible-menu":{},"ace":{},"search":{},"layout":{"headerPath":"layouts/header.html"},"addcssjs":{"css":[],"js":[]},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"header":{},"highlight":{},"favicon":"images/favicon.png","custom-favicon":{},"ga":{"configuration":"auto","token":"UA-84550302-1"},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"kubernetes-admission-control.md","mtime":"2019-02-19T21:05:45.049Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2019-02-19T21:06:41.554Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

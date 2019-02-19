@@ -1767,6 +1767,19 @@
             
         </li>
     
+        <li class="chapter " data-level="1.9.3" data-path="bundles.html">
+            
+                <a href="bundles.html#multiple-sources-of-policy-and-data">
+            
+                    
+                    Multiple Sources
+            
+                </a>
+            
+
+            
+        </li>
+    
 
             </ul>
             
@@ -2253,7 +2266,8 @@ the bundle download or activation fails for any reason, the status update
 will include error information describing the failure.</p>
 <p>The status updates will include a set of labels that uniquely identify the
 OPA instance. OPA automatically includes an <code>id</code> value in the label set that
-provides a globally unique identifier or the running OPA instance.</p>
+provides a globally unique identifier or the running OPA instance and a
+<code>version</code> value that provides the version of OPA.</p>
 <p>See the <a href="configuration.html">Configuration Reference</a> for configuration details.</p>
 <h2 id="status-service-api">Status Service API</h2>
 <p>OPA expects the service to expose an API endpoint that will receive status
@@ -2267,7 +2281,8 @@ on the agent, updates will be sent to <code>/status</code>.</p>
 <pre><code class="lang-json">{
     <span class="hljs-string">&quot;labels&quot;</span>: {
         <span class="hljs-string">&quot;app&quot;</span>: <span class="hljs-string">&quot;my-example-app&quot;</span>,
-        <span class="hljs-string">&quot;id&quot;</span>: <span class="hljs-string">&quot;1780d507-aea2-45cc-ae50-fa153c8e4a5a&quot;</span>
+        <span class="hljs-string">&quot;id&quot;</span>: <span class="hljs-string">&quot;1780d507-aea2-45cc-ae50-fa153c8e4a5a&quot;</span>,
+        <span class="hljs-string">&quot;version&quot;</span>: <span class="hljs-string">&quot;v0.10.4&quot;</span>
     },
     <span class="hljs-string">&quot;bundle&quot;</span>: {
         <span class="hljs-string">&quot;name&quot;</span>: <span class="hljs-string">&quot;http/example/authz&quot;</span>,
@@ -2419,7 +2434,7 @@ processed successfully.</p>
 
             
                 
-                <a href="bundles.html#bundle-file-format" class="navigation navigation-prev " aria-label="Previous page: File Format">
+                <a href="bundles.html#multiple-sources-of-policy-and-data" class="navigation navigation-prev " aria-label="Previous page: Multiple Sources">
                     <i class="fa fa-angle-left"></i>
                 </a>
                 
@@ -2435,7 +2450,7 @@ processed successfully.</p>
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Status","level":"1.10","depth":1,"next":{"title":"Service API","level":"1.10.1","depth":2,"anchor":"#status-service-api","path":"status.md","ref":"status.md#status-service-api","articles":[]},"previous":{"title":"File Format","level":"1.9.2","depth":2,"anchor":"#bundle-file-format","path":"bundles.md","ref":"bundles.md#bundle-file-format","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":["header","addcssjs","collapsible-menu","custom-favicon","ga","-fontsettings","ace"],"pluginsConfig":{"collapsible-menu":{},"ace":{},"search":{},"layout":{"headerPath":"layouts/header.html"},"addcssjs":{"css":[],"js":[]},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"header":{},"highlight":{},"favicon":"images/favicon.png","custom-favicon":{},"ga":{"configuration":"auto","token":"UA-84550302-1"},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"status.md","mtime":"2019-01-22T15:44:31.953Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2019-01-22T15:45:40.970Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Status","level":"1.10","depth":1,"next":{"title":"Service API","level":"1.10.1","depth":2,"anchor":"#status-service-api","path":"status.md","ref":"status.md#status-service-api","articles":[]},"previous":{"title":"Multiple Sources","level":"1.9.3","depth":2,"anchor":"#multiple-sources-of-policy-and-data","path":"bundles.md","ref":"bundles.md#multiple-sources-of-policy-and-data","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":["header","addcssjs","collapsible-menu","custom-favicon","ga","-fontsettings","ace"],"pluginsConfig":{"collapsible-menu":{},"ace":{},"search":{},"layout":{"headerPath":"layouts/header.html"},"addcssjs":{"css":[],"js":[]},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"header":{},"highlight":{},"favicon":"images/favicon.png","custom-favicon":{},"ga":{"configuration":"auto","token":"UA-84550302-1"},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"status.md","mtime":"2019-02-19T21:05:45.213Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2019-02-19T21:06:41.554Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

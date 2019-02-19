@@ -1767,6 +1767,19 @@
             
         </li>
     
+        <li class="chapter " data-level="1.9.3" data-path="bundles.html">
+            
+                <a href="bundles.html#multiple-sources-of-policy-and-data">
+            
+                    
+                    Multiple Sources
+            
+                </a>
+            
+
+            
+        </li>
+    
 
             </ul>
             
@@ -2255,24 +2268,44 @@ By configuring OPA to download bundles from a remote HTTP server, you can
 ensure that OPA has an up-to-date copy of policies and data required for
 enforcement at all times.</p>
 <p>OPA can only be configured to download one bundle at a time. You
-cannot configure OPA to download multiple bundles. If you need to
-provide OPA with data or policies from multiple sources, you should
-merge the data and policies within your bundle service.</p>
+cannot configure OPA to download multiple bundles. By default, the OPA
+REST APIs will prevent you from modifying policy and data loaded via
+bundles. If you need to load policy and data from multiple sources,
+see the section below.</p>
 <p>See the <a href="configuration.html">Configuration Reference</a> for configuration details.</p>
 <h2 id="bundle-service-api">Bundle Service API</h2>
 <p>OPA expects the service to expose an API endpoint that serves bundles. The
 bundle API should allow clients to download named bundles.</p>
-<pre><code class="lang-http"><span class="hljs-keyword">GET</span> <span class="hljs-string">/bundles/&lt;name&gt;</span> HTTP/1.1
+<pre><code class="lang-http"><span class="hljs-keyword">GET</span> <span class="hljs-string">/&lt;bundle_prefix&gt;/&lt;name&gt;</span> HTTP/1.1
 </code></pre>
-<p>The bundle name is hierarchical and contains slashes. For example, with the
-configuration above, the client would execute an HTTP <code>GET</code> request against
-<code>https://example.com/bundles/http/example/authz</code>.</p>
 <p>If the bundle exists, the server should respond with an HTTP 200 OK status
 followed by a gzipped tarball in the message body.</p>
 <pre><code class="lang-http">HTTP/1.1 <span class="hljs-number">200</span> OK
 <span class="hljs-attribute">Content-Type</span>: application/gzip
 </code></pre>
-<p>OPA currently supports Bearer token authentication for external services.</p>
+<p>Enable bundle downloading via configuration. For example:</p>
+<pre><code class="lang-yaml"><span class="hljs-attr">services:</span>
+<span class="hljs-attr">  - name:</span> acmecorp
+<span class="hljs-attr">    url:</span> https://example.com/service/v1
+<span class="hljs-attr">    credentials:</span>
+<span class="hljs-attr">      bearer:</span>
+<span class="hljs-attr">        token:</span> <span class="hljs-string">&quot;bGFza2RqZmxha3NkamZsa2Fqc2Rsa2ZqYWtsc2RqZmtramRmYWxkc2tm&quot;</span>
+
+<span class="hljs-attr">bundle:</span>
+<span class="hljs-attr">  name:</span> authz/bundle.tar.gz
+<span class="hljs-attr">  prefix:</span> somedir
+<span class="hljs-attr">  service:</span> acmecorp
+<span class="hljs-attr">  polling:</span>
+<span class="hljs-attr">      min_delay_seconds:</span> <span class="hljs-number">10</span>
+<span class="hljs-attr">      max_delay_seconds:</span> <span class="hljs-number">20</span>
+</code></pre>
+<p>Using this configuration, OPA will fetch bundles from
+<code>https://example.com/service/v1/somedir/authz/bundle.tar.gz</code>.</p>
+<p>The URL is constructed as follows:</p>
+<pre><code>https://example.com/service/v1/somedir/authz/bundle.tar.gz
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ^^^^^^^ ^^^^^^^^^^^^^^^^^^^
+services[0].url                prefix  name
+</code></pre><p>If the <code>bundle.prefix</code> field is not defined, the value defaults to <code>bundles</code>.</p>
 <p>See the following section for details on the bundle file format.</p>
 <h2 id="bundle-file-format">Bundle File Format</h2>
 <p>Bundle files are gzipped tarballs that contain policies and data. The data
@@ -2300,13 +2333,61 @@ data files (<code>bindings/data.json</code> and <code>permissions/data.json</cod
 <p>Bundle files may contain an optional <code>.manifest</code> file that stores bundle
 metadata. The file should contain a JSON serialized object.</p>
 <ul>
-<li>If the bundle service is capable of serving different revisions of the same
+<li><p>If the bundle service is capable of serving different revisions of the same
 bundle, the service should include a top-level <code>revision</code> field containing a
-<code>string</code> value that identifies the bundle revision.</li>
+<code>string</code> value that identifies the bundle revision.</p>
+</li>
+<li><p>If you expect to load additional data into OPA from outside the
+bundle (e.g., via OPA&apos;s HTTP API) you should include a top-level
+<code>roots</code> field containing of path prefixes that declare the scope of
+the bundle. See the section below on managing data from multiple
+sources. If the <code>roots</code> field is not included in the manifest it
+defaults to <code>[&quot;&quot;]</code> which means that ALL data and policy must come
+from the bundle.</p>
+</li>
 </ul>
 <p>OPA will only load data files named <code>data.json</code>, i.e., you MUST name files
 that contain data (which you want loaded into OPA) <code>data.json</code> -- otherwise
 they will be ignored.</p>
+<h2 id="multiple-sources-of-policy-and-data">Multiple Sources of Policy and Data</h2>
+<p>By default, when OPA is configured to download policy and data from a
+bundle service, the entire content of OPA&apos;s policy and data cache is
+defined by the bundle. However, if you need to load OPA with policy
+and data from multiple sources, you can implement your bundle service
+to generate bundles that are scoped to a subset of OPA&apos;s policy and
+data cache.</p>
+<blockquote>
+<p>We recommend that whenever possible, you implement policy and data
+aggregation centrally, however, in some cases that&apos;s not possible
+(e.g., due to latency requirements.)</p>
+</blockquote>
+<p>To scope bundles to a subset of OPA&apos;s policy and data cache, include
+a top-level <code>roots</code> key in the bundle that defines the roots of the
+<code>data</code> namespace that are owned by the bundle.</p>
+<p>For example, the following manifest would declare two roots
+(<code>acmecorp/policy</code> and <code>acmecorp/oncall</code>):</p>
+<pre><code>{
+    &quot;roots&quot;: [&quot;acmecorp/policy&quot;, &quot;acmecorp/oncall&quot;]
+}
+</code></pre><p>If OPA was loaded with a bundle containing this manifest it would only
+erase and overwrite policy and data under these roots. Policy and data
+loaded under other roots is left intact.</p>
+<p>When OPA loads scoped bundles, it validates that:</p>
+<ul>
+<li><p>The roots are not overlapping (e.g., <code>a/b/c</code> and <code>a/b</code> are
+overlapped and will result in an error.)</p>
+</li>
+<li><p>The policies in the bundle are contained under the roots. This is
+determined by inspecting the <code>package</code> statement in each of the
+policy files. For example, given the manifest above, it would be an
+error to include a policy file containing <code>package acmecorp.other</code>
+because <code>acmecorp.other</code> is not contained in either of the roots.</p>
+</li>
+<li><p>The data in the bundle is contained under the roots.</p>
+</li>
+</ul>
+<p>If bundle validation fails, OPA will report the validation error via
+the Status API.</p>
 <h2 id="debugging-your-bundles">Debugging Your Bundles</h2>
 <p>When you run OPA, you can provide bundle files over the command line. This
 allows you to manually check that your bundles include all of the files that
@@ -2356,7 +2437,7 @@ you intended and that they are structured correctly. For example:</p>
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Bundles","level":"1.9","depth":1,"next":{"title":"Service API","level":"1.9.1","depth":2,"anchor":"#bundle-service-api","path":"bundles.md","ref":"bundles.md#bundle-service-api","articles":[]},"previous":{"title":"Kicking the Tires","level":"1.8.2.1","depth":3,"anchor":"#kicking-the-tires","path":"deployments.md","ref":"deployments.md#kicking-the-tires","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":["header","addcssjs","collapsible-menu","custom-favicon","ga","-fontsettings","ace"],"pluginsConfig":{"collapsible-menu":{},"ace":{},"search":{},"layout":{"headerPath":"layouts/header.html"},"addcssjs":{"css":[],"js":[]},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"header":{},"highlight":{},"favicon":"images/favicon.png","custom-favicon":{},"ga":{"configuration":"auto","token":"UA-84550302-1"},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"bundles.md","mtime":"2019-01-22T15:44:31.785Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2019-01-22T15:45:40.970Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Bundles","level":"1.9","depth":1,"next":{"title":"Service API","level":"1.9.1","depth":2,"anchor":"#bundle-service-api","path":"bundles.md","ref":"bundles.md#bundle-service-api","articles":[]},"previous":{"title":"Kicking the Tires","level":"1.8.2.1","depth":3,"anchor":"#kicking-the-tires","path":"deployments.md","ref":"deployments.md#kicking-the-tires","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":["header","addcssjs","collapsible-menu","custom-favicon","ga","-fontsettings","ace"],"pluginsConfig":{"collapsible-menu":{},"ace":{},"search":{},"layout":{"headerPath":"layouts/header.html"},"addcssjs":{"css":[],"js":[]},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"header":{},"highlight":{},"favicon":"images/favicon.png","custom-favicon":{},"ga":{"configuration":"auto","token":"UA-84550302-1"},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"bundles.md","mtime":"2019-02-19T21:05:45.041Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2019-02-19T21:06:41.554Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

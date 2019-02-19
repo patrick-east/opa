@@ -1767,6 +1767,19 @@
             
         </li>
     
+        <li class="chapter " data-level="1.9.3" data-path="bundles.html">
+            
+                <a href="bundles.html#multiple-sources-of-policy-and-data">
+            
+                    
+                    Multiple Sources
+            
+                </a>
+            
+
+            
+        </li>
+    
 
             </ul>
             
@@ -2387,6 +2400,17 @@ import data.opa.examples.violations            <span class="hljs-comment"># Virt
 </code></pre>
 <pre><code class="lang-http"><span class="hljs-keyword">GET</span> <span class="hljs-string">https://example.com/v1/data/opa/examples/violations</span> HTTP/1.1
 </code></pre>
+<blockquote>
+<p>Since the <code>data</code> document includes both base and virtual documents,
+it is possible to query for both at the same time. The easiest way
+to illustrate this is to query for <em>all</em> of <code>data</code> at once. Note,
+OPA does NOT allow base and virtual documents to overlap. For
+example, if you try to load a rule that defines a virtual document
+at path a/b/c (which is already defined by a base document), OPA
+will return an error. Similarly, if you try to load a base document
+into a path that is already defined by a virtual document, OPA will
+also return an error.</p>
+</blockquote>
 <h3 id="the-input-document">The <code>input</code> Document</h3>
 <p>In some cases, policies require input values. In addition to the built-in
 <code>data</code> document, OPA also has a built-in <code>input</code> document. When you query
@@ -2718,7 +2742,7 @@ policy. We can use OPA&apos;s API to query for just those servers.</p>
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"How Does OPA Work?","level":"1.2","depth":1,"next":{"title":"Overview","level":"1.2.1","depth":2,"anchor":"#overview","path":"how-does-opa-work.md","ref":"how-does-opa-work.md#overview","articles":[]},"previous":{"title":"Why use OPA?","level":"1.1.4","depth":2,"anchor":"#why-use-opa","path":"README.md","ref":"README.md#why-use-opa","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":["header","addcssjs","collapsible-menu","custom-favicon","ga","-fontsettings","ace"],"pluginsConfig":{"collapsible-menu":{},"ace":{},"search":{},"layout":{"headerPath":"layouts/header.html"},"addcssjs":{"css":[],"js":[]},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"header":{},"highlight":{},"favicon":"images/favicon.png","custom-favicon":{},"ga":{"configuration":"auto","token":"UA-84550302-1"},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"how-does-opa-work.md","mtime":"2019-01-22T15:44:31.789Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2019-01-22T15:45:40.970Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"How Does OPA Work?","level":"1.2","depth":1,"next":{"title":"Overview","level":"1.2.1","depth":2,"anchor":"#overview","path":"how-does-opa-work.md","ref":"how-does-opa-work.md#overview","articles":[]},"previous":{"title":"Why use OPA?","level":"1.1.4","depth":2,"anchor":"#why-use-opa","path":"README.md","ref":"README.md#why-use-opa","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":["header","addcssjs","collapsible-menu","custom-favicon","ga","-fontsettings","ace"],"pluginsConfig":{"collapsible-menu":{},"ace":{},"search":{},"layout":{"headerPath":"layouts/header.html"},"addcssjs":{"css":[],"js":[]},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"header":{},"highlight":{},"favicon":"images/favicon.png","custom-favicon":{},"ga":{"configuration":"auto","token":"UA-84550302-1"},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"how-does-opa-work.md","mtime":"2019-02-19T21:05:45.045Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2019-02-19T21:06:41.554Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

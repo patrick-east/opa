@@ -1767,6 +1767,19 @@
             
         </li>
     
+        <li class="chapter " data-level="1.9.3" data-path="bundles.html">
+            
+                <a href="bundles.html#multiple-sources-of-policy-and-data">
+            
+                    
+                    Multiple Sources
+            
+                </a>
+            
+
+            
+        </li>
+    
 
             </ul>
             
@@ -2252,6 +2265,11 @@
 <h3 id="list-policies">List Policies</h3>
 <pre><code>GET /v1/policies
 </code></pre><p>List policy modules.</p>
+<h4 id="status-codes">Status Codes</h4>
+<ul>
+<li><strong>200</strong> - no error</li>
+<li><strong>500</strong> - server error</li>
+</ul>
 <h4 id="example-request">Example Request</h4>
 <pre><code class="lang-http"><span class="hljs-keyword">GET</span> <span class="hljs-string">/v1/policies</span> HTTP/1.1
 </code></pre>
@@ -2588,14 +2606,19 @@
   ]
 }
 </code></pre>
-<h4 id="status-codes">Status Codes</h4>
-<ul>
-<li><strong>200</strong> - no error</li>
-<li><strong>500</strong> - server error</li>
-</ul>
 <h3 id="get-a-policy">Get a Policy</h3>
 <pre><code>GET /v1/policies/&lt;id&gt;
 </code></pre><p>Get a policy module.</p>
+<h4 id="query-parameters">Query Parameters</h4>
+<ul>
+<li><strong>pretty</strong> - If parameter is <code>true</code>, response will formatted for humans.</li>
+</ul>
+<h4 id="status-codes">Status Codes</h4>
+<ul>
+<li><strong>200</strong> - no error</li>
+<li><strong>404</strong> - not found</li>
+<li><strong>500</strong> - server error</li>
+</ul>
 <h4 id="example-request">Example Request</h4>
 <pre><code class="lang-http"><span class="hljs-keyword">GET</span> <span class="hljs-string">/v1/policies/example1</span> HTTP/1.1
 </code></pre>
@@ -2807,21 +2830,23 @@
   }
 }
 </code></pre>
-<h4 id="query-parameters">Query Parameters</h4>
-<ul>
-<li><strong>pretty</strong> - If parameter is <code>true</code>, response will formatted for humans.</li>
-</ul>
-<h4 id="status-codes">Status Codes</h4>
-<ul>
-<li><strong>200</strong> - no error</li>
-<li><strong>404</strong> - not found</li>
-<li><strong>500</strong> - server error</li>
-</ul>
 <h3 id="create-or-update-a-policy">Create or Update a Policy</h3>
 <pre><code>PUT /v1/policies/&lt;id&gt;
 Content-Type: text/plain
 </code></pre><p>Create or update a policy module.</p>
 <p>If the policy module does not exist, it is created. If the policy module already exists, it is replaced.</p>
+<h3 id="query-parameters">Query Parameters</h3>
+<ul>
+<li><strong>pretty</strong> - If parameter is <code>true</code>, response will formatted for humans.</li>
+<li><strong>metrics</strong> - Return compiler performance metrics in addition to result. See <a href="#performance-metrics">Performance Metrics</a> for more detail.</li>
+</ul>
+<h4 id="status-codes">Status Codes</h4>
+<ul>
+<li><strong>200</strong> - no error</li>
+<li><strong>400</strong> - bad request</li>
+<li><strong>500</strong> - server error</li>
+</ul>
+<p>Before accepting the request, the server will parse, compile, and install the policy module. If the policy module is invalid, one of these steps will fail and the server will respond with 400. The error message in the response will be set to indicate the source of the error.</p>
 <h4 id="example-request">Example Request</h4>
 <pre><code class="lang-http"><span class="hljs-keyword">PUT</span> <span class="hljs-string">/v1/policies/example1</span> HTTP/1.1
 <span class="hljs-attribute">Content-Type</span>: text/plain
@@ -2848,7 +2873,10 @@ public_servers[server] {
 </code></pre>
 <pre><code class="lang-json">{}
 </code></pre>
-<h3 id="query-parameters">Query Parameters</h3>
+<h3 id="delete-a-policy">Delete a Policy</h3>
+<pre><code>DELETE /v1/policies/&lt;id&gt;
+</code></pre><p>Delete a policy module.</p>
+<h4 id="query-parameters">Query Parameters</h4>
 <ul>
 <li><strong>pretty</strong> - If parameter is <code>true</code>, response will formatted for humans.</li>
 <li><strong>metrics</strong> - Return compiler performance metrics in addition to result. See <a href="#performance-metrics">Performance Metrics</a> for more detail.</li>
@@ -2857,12 +2885,10 @@ public_servers[server] {
 <ul>
 <li><strong>200</strong> - no error</li>
 <li><strong>400</strong> - bad request</li>
+<li><strong>404</strong> - not found</li>
 <li><strong>500</strong> - server error</li>
 </ul>
-<p>Before accepting the request, the server will parse, compile, and install the policy module. If the policy module is invalid, one of these steps will fail and the server will respond with 400. The error message in the response will be set to indicate the source of the error.</p>
-<h3 id="delete-a-policy">Delete a Policy</h3>
-<pre><code>DELETE /v1/policies/&lt;id&gt;
-</code></pre><p>Delete a policy module.</p>
+<p>If other policy modules in the same package depend on rules in the policy module to be deleted, the server will return 400.</p>
 <h4 id="example-request">Example Request</h4>
 <pre><code class="lang-http"><span class="hljs-keyword">DELETE</span> <span class="hljs-string">/v1/policies/example2</span> HTTP/1.1
 </code></pre>
@@ -2872,25 +2898,46 @@ public_servers[server] {
 </code></pre>
 <pre><code class="lang-json">{}
 </code></pre>
-<h4 id="query-parameters">Query Parameters</h4>
-<ul>
-<li><strong>pretty</strong> - If parameter is <code>true</code>, response will formatted for humans.</li>
-<li><strong>metrics</strong> - Return compiler performance metrics in addition to result. See <a href="#performance-metrics">Performance Metrics</a> for more detail.</li>
-</ul>
-<h4 id="status-codes">Status Codes</h4>
-<ul>
-<li><strong>204</strong> - no content</li>
-<li><strong>400</strong> - bad request</li>
-<li><strong>404</strong> - not found</li>
-<li><strong>500</strong> - server error</li>
-</ul>
-<p>If other policy modules in the same package depend on rules in the policy module to be deleted, the server will return 400.</p>
 <h2 id="data-api">Data API</h2>
 <p>The Data API exposes endpoints for reading and writing documents in OPA. For an introduction to the different types of documents in OPA see <a href="how-does-opa-work.html">How Does OPA Work?</a>.</p>
 <h3 id="get-a-document">Get a Document</h3>
 <pre><code>GET /v1/data/{path:.+}
 </code></pre><p>Get a document.</p>
 <p>The path separator is used to access values inside object and array documents. If the path indexes into an array, the server will attempt to convert the array index to an integer. If the path element cannot be converted to an integer, the server will respond with 404.</p>
+<h4 id="query-parameters">Query Parameters</h4>
+<ul>
+<li><strong>input</strong> - Provide an input document. Format is a JSON value that will be used as the value for the input document.</li>
+<li><strong>pretty</strong> - If parameter is <code>true</code>, response will formatted for humans.</li>
+<li><strong>explain</strong> - Return query explanation in addition to result. Values: <strong>full</strong>.</li>
+<li><strong>metrics</strong> - Return query performance metrics in addition to result. See <a href="#performance-metrics">Performance Metrics</a> for more detail.</li>
+<li><strong>instrument</strong> - Instrument query evaluation and return a superset of performance metrics in addition to result. See <a href="#performance-metrics">Performance Metrics</a> for more detail.</li>
+<li><strong>watch</strong> - Set a watch on the data reference if the parameter is present. See <a href="#watches">Watches</a> for more detail.</li>
+</ul>
+<h4 id="status-codes">Status Codes</h4>
+<ul>
+<li><strong>200</strong> - no error</li>
+<li><strong>400</strong> - bad request</li>
+<li><strong>404</strong> - not found</li>
+<li><strong>500</strong> - server error</li>
+</ul>
+<p>The server returns 400 if either:</p>
+<ul>
+<li>The query requires the input document and the caller does not provide it.</li>
+<li>The caller provides the input document but the query already defines it programmatically.</li>
+</ul>
+<p>The server returns 200 if the path refers to an undefined document. In this
+case, the response will not contain a <code>result</code> property.</p>
+<h4 id="response-message">Response Message</h4>
+<ul>
+<li><strong>result</strong> - The base or virtual document referred to by the URL path. If the
+path is undefined, this key will be omitted.</li>
+<li><strong>metrics</strong> - If query metrics are enabled, this field contains query
+performance metrics collected during the parse, compile, and evaluation steps.</li>
+<li><strong>decision_id</strong> - If decision logging is enabled, this field contains a string
+that uniquely identifies the decision. The identifier will be included in the
+decision log event for this decision. Callers can use the identifier for
+correlation purposes.</li>
+</ul>
 <h4 id="example-request">Example Request</h4>
 <pre><code class="lang-http"><span class="hljs-keyword">GET</span> <span class="hljs-string">/v1/data/opa/examples/public_servers</span> HTTP/1.1
 </code></pre>
@@ -3123,9 +3170,23 @@ It is not complete, as further changes to <code>/data/servers</code> would cause
   ]
 }
 </code></pre>
+<h3 id="get-a-document-with-input">Get a Document (with Input)</h3>
+<pre><code>POST /v1/data/{path:.+}
+Content-Type: application/json
+</code></pre><pre><code class="lang-json">{
+  <span class="hljs-string">&quot;input&quot;</span>: ...
+}
+</code></pre>
+<p>Get a document that requires input.</p>
+<p>The path separator is used to access values inside object and array documents. If the path indexes into an array, the server will attempt to convert the array index to an integer. If the path element cannot be converted to an integer, the server will respond with 404.</p>
+<p>The request body contains an object that specifies a value for <a href="how-does-opa-work.html#the-input-document">The input Document</a>.</p>
+<h4 id="request-headers">Request Headers</h4>
+<ul>
+<li><strong>Content-Type: application/x-yaml</strong>: Indicates the request body is a YAML encoded object.</li>
+</ul>
 <h4 id="query-parameters">Query Parameters</h4>
 <ul>
-<li><strong>input</strong> - Provide an input document. Format is a JSON value that will be used as the value for the input document.</li>
+<li><strong>partial</strong> - Use the partial evaluation (optimization) when evaluating the query.</li>
 <li><strong>pretty</strong> - If parameter is <code>true</code>, response will formatted for humans.</li>
 <li><strong>explain</strong> - Return query explanation in addition to result. Values: <strong>full</strong>.</li>
 <li><strong>metrics</strong> - Return query performance metrics in addition to result. See <a href="#performance-metrics">Performance Metrics</a> for more detail.</li>
@@ -3139,10 +3200,10 @@ It is not complete, as further changes to <code>/data/servers</code> would cause
 <li><strong>500</strong> - server error</li>
 </ul>
 <p>The server returns 400 if either:</p>
-<ul>
-<li>The query requires the input document and the caller does not provide it.</li>
-<li>The caller provides the input document but the query already defines it programmatically.</li>
-</ul>
+<ol>
+<li>The query requires an input document and the client did not supply one.</li>
+<li>The query already defines an input document and the client did supply one.</li>
+</ol>
 <p>The server returns 200 if the path refers to an undefined document. In this
 case, the response will not contain a <code>result</code> property.</p>
 <h4 id="response-message">Response Message</h4>
@@ -3156,16 +3217,6 @@ that uniquely identifies the decision. The identifier will be included in the
 decision log event for this decision. Callers can use the identifier for
 correlation purposes.</li>
 </ul>
-<h3 id="get-a-document-with-input">Get a Document (with Input)</h3>
-<pre><code>POST /v1/data/{path:.+}
-Content-Type: application/json
-</code></pre><pre><code class="lang-json">{
-  <span class="hljs-string">&quot;input&quot;</span>: ...
-}
-</code></pre>
-<p>Get a document that requires input.</p>
-<p>The path separator is used to access values inside object and array documents. If the path indexes into an array, the server will attempt to convert the array index to an integer. If the path element cannot be converted to an integer, the server will respond with 404.</p>
-<p>The request body contains an object that specifies a value for <a href="how-does-opa-work.html#the-input-document">The input Document</a>.</p>
 <p>The examples below assume the following policy:</p>
 <pre><code class="lang-ruby">package opa.examples
 
@@ -3210,43 +3261,6 @@ allow_request { flag = <span class="hljs-keyword">true</span> }
 </code></pre>
 <pre><code class="lang-json">{}
 </code></pre>
-<h4 id="request-headers">Request Headers</h4>
-<ul>
-<li><strong>Content-Type: application/x-yaml</strong>: Indicates the request body is a YAML encoded object.</li>
-</ul>
-<h4 id="query-parameters">Query Parameters</h4>
-<ul>
-<li><strong>partial</strong> - Use the partial evaluation (optimization) when evaluating the query.</li>
-<li><strong>pretty</strong> - If parameter is <code>true</code>, response will formatted for humans.</li>
-<li><strong>explain</strong> - Return query explanation in addition to result. Values: <strong>full</strong>.</li>
-<li><strong>metrics</strong> - Return query performance metrics in addition to result. See <a href="#performance-metrics">Performance Metrics</a> for more detail.</li>
-<li><strong>instrument</strong> - Instrument query evaluation and return a superset of performance metrics in addition to result. See <a href="#performance-metrics">Performance Metrics</a> for more detail.</li>
-<li><strong>watch</strong> - Set a watch on the data reference if the parameter is present. See <a href="#watches">Watches</a> for more detail.</li>
-</ul>
-<h4 id="status-codes">Status Codes</h4>
-<ul>
-<li><strong>200</strong> - no error</li>
-<li><strong>400</strong> - bad request</li>
-<li><strong>500</strong> - server error</li>
-</ul>
-<p>The server returns 400 if either:</p>
-<ol>
-<li>The query requires an input document and the client did not supply one.</li>
-<li>The query already defines an input document and the client did supply one.</li>
-</ol>
-<p>The server returns 200 if the path refers to an undefined document. In this
-case, the response will not contain a <code>result</code> property.</p>
-<h4 id="response-message">Response Message</h4>
-<ul>
-<li><strong>result</strong> - The base or virtual document referred to by the URL path. If the
-path is undefined, this key will be omitted.</li>
-<li><strong>metrics</strong> - If query metrics are enabled, this field contains query
-performance metrics collected during the parse, compile, and evaluation steps.</li>
-<li><strong>decision_id</strong> - If decision logging is enabled, this field contains a string
-that uniquely identifies the decision. The identifier will be included in the
-decision log event for this decision. Callers can use the identifier for
-correlation purposes.</li>
-</ul>
 <h3 id="get-a-document-webhook">Get a Document (Webhook)</h3>
 <pre><code>POST /v0/data/{path:.+}
 Content-Type: application/json
@@ -3257,6 +3271,22 @@ request/response formats. Note, the API path prefix is <code>/v0</code> instead 
 Document</a>. The request message body
 may be empty. The path separator is used to access values inside object and
 array documents.</p>
+<h4 id="request-headers">Request Headers</h4>
+<ul>
+<li><strong>Content-Type: application/x-yaml</strong>: Indicates the request body is a YAML encoded object.</li>
+</ul>
+<h4 id="query-parameters">Query Parameters</h4>
+<ul>
+<li><strong>pretty</strong> - If parameter is <code>true</code>, response will formatted for humans.</li>
+</ul>
+<h4 id="status-codes">Status Codes</h4>
+<ul>
+<li><strong>200</strong> - no error</li>
+<li><strong>400</strong> - bad request</li>
+<li><strong>404</strong> - not found</li>
+<li><strong>500</strong> - server error</li>
+</ul>
+<p>If the requested document is missing or undefined, the server will return 404 and the message body will contain an error object.</p>
 <p>The examples below assume the following policy:</p>
 <pre><code class="lang-ruby">package opa.examples
 
@@ -3280,28 +3310,21 @@ allow_request { flag = <span class="hljs-keyword">true</span> }
 </code></pre>
 <pre><code class="lang-json"><span class="hljs-literal">true</span>
 </code></pre>
-<h4 id="request-headers">Request Headers</h4>
-<ul>
-<li><strong>Content-Type: application/x-yaml</strong>: Indicates the request body is a YAML encoded object.</li>
-</ul>
-<h4 id="query-parameters">Query Parameters</h4>
-<ul>
-<li><strong>pretty</strong> - If parameter is <code>true</code>, response will formatted for humans.</li>
-</ul>
-<h4 id="status-codes">Status Codes</h4>
-<ul>
-<li><strong>200</strong> - no error</li>
-<li><strong>400</strong> - bad request</li>
-<li><strong>404</strong> - not found</li>
-<li><strong>500</strong> - server error</li>
-</ul>
-<p>If the requested document is missing or undefined, the server will return 404 and the message body will contain an error object.</p>
 <h3 id="create-or-overwrite-a-document">Create or Overwrite a Document</h3>
 <pre><code>PUT /v1/data/{path:.+}
 Content-Type: application/json
 </code></pre><p>Create or overwrite a document.</p>
 <p>If the path does not refer to an existing document, the server will attempt to create all of the necessary containing documents. This behavior is similar in principle to the Unix command <code>mkdir -p</code>.</p>
 <p>The server will respect the <code>If-None-Match</code> header if it is set to <code>*</code>. In this case, the server will not overwrite an existing document located at the path.</p>
+<h4 id="status-codes">Status Codes</h4>
+<ul>
+<li><strong>204</strong> - no content (success)</li>
+<li><strong>304</strong> - not modified</li>
+<li><strong>400</strong> - bad request</li>
+<li><strong>404</strong> - write conflict</li>
+<li><strong>500</strong> - server error</li>
+</ul>
+<p>If the path refers to a virtual document or a conflicting base document the server will respond with 404. A base document conflict will occur if the parent portion of the path refers to a non-object document.</p>
 <h4 id="example-request-to-initialize-document-with-if-none-match">Example Request To Initialize Document With If-None-Match</h4>
 <pre><code class="lang-http"><span class="hljs-keyword">PUT</span> <span class="hljs-string">/v1/data/us-west/servers</span> HTTP/1.1
 <span class="hljs-attribute">Content-Type</span>: application/json
@@ -3315,19 +3338,20 @@ Content-Type: application/json
 <h4 id="example-response-if-document-does-not-exist">Example Response If Document Does Not Exist</h4>
 <pre><code class="lang-http">HTTP/1.1 <span class="hljs-number">204</span> No Content
 </code></pre>
-<h4 id="status-codes">Status Codes</h4>
-<ul>
-<li><strong>204</strong> - no content (success)</li>
-<li><strong>304</strong> - not modified</li>
-<li><strong>404</strong> - write conflict</li>
-</ul>
-<p>If the path refers to a virtual document or a conflicting base document the server will respond with 404. A base document conflict will occur if the parent portion of the path refers to a non-object document.</p>
 <h3 id="patch-a-document">Patch a Document</h3>
 <pre><code>PATCH /v1/data/{path:.+}
 Content-Type: application/json-patch+json
 </code></pre><p>Update a document.</p>
 <p>The path separator is used to access values inside object and array documents. If the path indexes into an array, the server will attempt to convert the array index to an integer. If the path element cannot be converted to an integer, the server will respond with 404.</p>
 <p>The server accepts updates encoded as JSON Patch operations. The message body of the request should contain a JSON encoded array containing one or more JSON Patch operations. Each operation specifies the operation type, path, and an optional value. For more information on JSON Patch, see <a href="https://tools.ietf.org/html/rfc6902" target="_blank">RFC 6902</a>.</p>
+<h4 id="status-codes">Status Codes</h4>
+<ul>
+<li><strong>204</strong> - no content (success)</li>
+<li><strong>400</strong> - bad request</li>
+<li><strong>404</strong> - not found</li>
+<li><strong>500</strong> - server error</li>
+</ul>
+<p>The effective path of the JSON Patch operation is obtained by joining the path portion of the URL with the path value from the operation(s) contained in the message body. In all cases, the parent of the effective path MUST refer to an existing document, otherwise the server returns 404. In the case of <strong>remove</strong> and <strong>replace</strong> operations, the effective path MUST refer to an existing document, otherwise the server returns 404.</p>
 <h4 id="example-request">Example Request</h4>
 <pre><code class="lang-http"><span class="hljs-keyword">PATCH</span> <span class="hljs-string">/v1/data/servers</span> HTTP/1.1
 <span class="hljs-attribute">Content-Type</span>: application/json-patch+json
@@ -3346,23 +3370,10 @@ Content-Type: application/json-patch+json
 <h4 id="example-response">Example Response</h4>
 <pre><code class="lang-http">HTTP/1.1 <span class="hljs-number">204</span> No Content
 </code></pre>
-<h4 id="status-codes">Status Codes</h4>
-<ul>
-<li><strong>204</strong> - no content (success)</li>
-<li><strong>404</strong> - not found</li>
-<li><strong>500</strong> - server error</li>
-</ul>
-<p>The effective path of the JSON Patch operation is obtained by joining the path portion of the URL with the path value from the operation(s) contained in the message body. In all cases, the parent of the effective path MUST refer to an existing document, otherwise the server returns 404. In the case of <strong>remove</strong> and <strong>replace</strong> operations, the effective path MUST refer to an existing document, otherwise the server returns 404.</p>
 <h3 id="delete-a-document">Delete a Document</h3>
 <pre><code>DELETE /v1/data/{path:.+}
 </code></pre><p>Delete a document.</p>
 <p>The server processes the DELETE method as if the client had sent a PATCH request containing a single remove operation.</p>
-<h4 id="example-request">Example Request</h4>
-<pre><code class="lang-http"><span class="hljs-keyword">DELETE</span> <span class="hljs-string">/v1/data/servers</span> HTTP/1.1
-</code></pre>
-<h4 id="example-response">Example Response</h4>
-<pre><code class="lang-http">HTTP/1.1 <span class="hljs-number">204</span> No Content
-</code></pre>
 <h4 id="status-codes">Status Codes</h4>
 <ul>
 <li><strong>204</strong> - no content (success)</li>
@@ -3370,6 +3381,12 @@ Content-Type: application/json-patch+json
 <li><strong>500</strong> - server error</li>
 </ul>
 <p>If the path refers to a non-existent document, the server returns 404.</p>
+<h4 id="example-request">Example Request</h4>
+<pre><code class="lang-http"><span class="hljs-keyword">DELETE</span> <span class="hljs-string">/v1/data/servers</span> HTTP/1.1
+</code></pre>
+<h4 id="example-response">Example Response</h4>
+<pre><code class="lang-http">HTTP/1.1 <span class="hljs-number">204</span> No Content
+</code></pre>
 <h2 id="query-api">Query API</h2>
 <h3 id="execute-a-simple-query">Execute a Simple Query</h3>
 <pre><code>POST /
@@ -3377,7 +3394,24 @@ Content-Type: application/json
 </code></pre><p>Execute a simple query.</p>
 <p>OPA serves POST requests without a URL path by querying for the document at
 path <code>/data/system/main</code>. The content of that document defines the response
-entirely. The policy example below shows how to define a rule that will
+entirely.</p>
+<h4 id="request-headers">Request Headers</h4>
+<ul>
+<li><strong>Content-Type: application/x-yaml</strong>: Indicates the request body is a YAML encoded object.</li>
+</ul>
+<h4 id="query-parameters">Query Parameters</h4>
+<ul>
+<li><strong>pretty</strong> - If parameter is <code>true</code>, response will formatted for humans.</li>
+</ul>
+<h4 id="status-codes">Status Codes</h4>
+<ul>
+<li><strong>200</strong> - no error</li>
+<li><strong>400</strong> - bad request</li>
+<li><strong>404</strong> - not found</li>
+<li><strong>500</strong> - server error</li>
+</ul>
+<p>If the default decision (defaulting to <code>/system/main</code>) is undefined, the server returns 404.</p>
+<p>The policy example below shows how to define a rule that will
 produce a value for the <code>/data/system/main</code> document. You can configure OPA
 to use a different URL path to serve these queries. See the <a href="configuration.html">Configuration Reference</a>
 for more information.</p>
@@ -3405,26 +3439,26 @@ Content-Type: application/json
 </code></pre>
 <pre><code class="lang-json"><span class="hljs-string">&quot;hello, alice&quot;</span>
 </code></pre>
-<h4 id="request-headers">Request Headers</h4>
+<h3 id="execute-an-ad-hoc-query">Execute an Ad-hoc Query</h3>
+<p>Execute an ad-hoc query and return bindings for variables found in the query.</p>
+<pre><code>GET /v1/query
+</code></pre><h4 id="query-parameters">Query Parameters</h4>
 <ul>
-<li><strong>Content-Type: application/x-yaml</strong>: Indicates the request body is a YAML encoded object.</li>
-</ul>
-<h4 id="query-parameters">Query Parameters</h4>
-<ul>
+<li><strong>q</strong> - The ad-hoc query to execute. OPA will parse, compile, and execute the query represented by the parameter value. The value MUST be URL encoded. Only used in GET method. For POST method the query is sent as part of the request body and this parameter is not used.</li>
 <li><strong>pretty</strong> - If parameter is <code>true</code>, response will formatted for humans.</li>
+<li><strong>explain</strong> - Return query explanation in addition to result. Values: <strong>full</strong>.</li>
+<li><strong>metrics</strong> - Return query performance metrics in addition to result. See <a href="#performance-metrics">Performance Metrics</a> for more detail.</li>
+<li><strong>watch</strong> - Set a watch on the query if the parameter is present. See <a href="#watches">Watches</a> for more detail.</li>
 </ul>
 <h4 id="status-codes">Status Codes</h4>
 <ul>
 <li><strong>200</strong> - no error</li>
 <li><strong>400</strong> - bad request</li>
-<li><strong>404</strong> - not found</li>
+<li><strong>404</strong> - watch ID not found</li>
 <li><strong>500</strong> - server error</li>
+<li><strong>501</strong> - streaming not implemented</li>
 </ul>
-<p>If the default decision (defaulting to <code>/system/main</code>) is undefined, the server returns 404.</p>
-<h3 id="execute-an-ad-hoc-query">Execute an Ad-hoc Query</h3>
-<p>Execute an ad-hoc query and return bindings for variables found in the query.</p>
-<pre><code>GET /v1/query
-</code></pre><p>For queries that have large JSON values it is recommended to use the <code>POST</code> method with the query included as the <code>POST</code> body</p>
+<p>For queries that have large JSON values it is recommended to use the <code>POST</code> method with the query included as the <code>POST</code> body</p>
 <pre><code>POST /v1/query HTTP/1.1
 Content-Type: application/json
 </code></pre><pre><code class="lang-json">{
@@ -3450,22 +3484,6 @@ Content-Type: application/json
   ]
 }
 </code></pre>
-<h4 id="query-parameters">Query Parameters</h4>
-<ul>
-<li><strong>q</strong> - The ad-hoc query to execute. OPA will parse, compile, and execute the query represented by the parameter value. The value MUST be URL encoded. Only used in GET method. For POST method the query is sent as part of the request body and this parameter is not used. </li>
-<li><strong>pretty</strong> - If parameter is <code>true</code>, response will formatted for humans.</li>
-<li><strong>explain</strong> - Return query explanation in addition to result. Values: <strong>full</strong>.</li>
-<li><strong>metrics</strong> - Return query performance metrics in addition to result. See <a href="#performance-metrics">Performance Metrics</a> for more detail.</li>
-<li><strong>watch</strong> - Set a watch on the query if the parameter is present. See <a href="#watches">Watches</a> for more detail.</li>
-</ul>
-<h4 id="status-codes">Status Codes</h4>
-<ul>
-<li><strong>200</strong> - no error</li>
-<li><strong>400</strong> - bad request</li>
-<li><strong>404</strong> - watch ID not found</li>
-<li><strong>500</strong> - server error</li>
-<li><strong>501</strong> - streaming not implemented</li>
-</ul>
 <h2 id="compile-api">Compile API</h2>
 <h3 id="partially-evaluate-a-query">Partially Evaluate a Query</h3>
 <pre><code class="lang-http">POST /v1/compile
@@ -3475,6 +3493,51 @@ Content-Type: application/json
 <p>The <a href="#compile-api">Compile API</a> allows you to partially evaluate Rego queries
 and obtain a simplified version of the policy. For more details on Partial
 Evaluation in OPA, see <a href="https://blog.openpolicyagent.org/partial-evaluation-162750eaf422" target="_blank">this post on blog.openpolicyagent.org</a>.</p>
+<h4 id="request-body">Request Body</h4>
+<p>Compile API requests contain the following fields:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Requried</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>query</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>The query to partially evaluate and compile.</td>
+</tr>
+<tr>
+<td><code>input</code></td>
+<td><code>any</code></td>
+<td>No</td>
+<td>The input document to use during partial evaluation (default: undefined).</td>
+</tr>
+<tr>
+<td><code>unknowns</code></td>
+<td><code>array[string]</code></td>
+<td>No</td>
+<td>The terms to treat as unknown during partial evaluation (default: <code>[&quot;input&quot;]</code>]).</td>
+</tr>
+</tbody>
+</table>
+<h4 id="query-parameters">Query Parameters</h4>
+<ul>
+<li><strong>pretty</strong> - If parameter is <code>true</code>, response will formatted for humans.</li>
+<li><strong>explain</strong> - Return query explanation in addition to result. Values: <strong>full</strong>.</li>
+<li><strong>metrics</strong> - Return query performance metrics in addition to result. See <a href="#performance-metrics">Performance Metrics</a> for more detail.</li>
+<li><strong>instrument</strong> - Instrument query evaluation and return a superset of performance metrics in addition to result. See <a href="#performance-metrics">Performance Metrics</a> for more detail.</li>
+</ul>
+<h4 id="status-codes">Status Codes</h4>
+<ul>
+<li><strong>200</strong> - no error</li>
+<li><strong>400</strong> - bad request</li>
+<li><strong>500</strong> - server error</li>
+</ul>
 <p>The example below assumes that OPA has been given the following policy:</p>
 <pre><code class="lang-ruby">package example
 
@@ -3550,51 +3613,6 @@ allow {
   }
 }
 </code></pre>
-<h4 id="request-body">Request Body</h4>
-<p>Compile API requests contain the following fields:</p>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Type</th>
-<th>Requried</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>query</code></td>
-<td><code>string</code></td>
-<td>Yes</td>
-<td>The query to partially evaluate and compile.</td>
-</tr>
-<tr>
-<td><code>input</code></td>
-<td><code>any</code></td>
-<td>No</td>
-<td>The input document to use during partial evaluation (default: undefined).</td>
-</tr>
-<tr>
-<td><code>unknowns</code></td>
-<td><code>array[string]</code></td>
-<td>No</td>
-<td>The terms to treat as unknown during partial evaluation (default: <code>[&quot;input&quot;]</code>]).</td>
-</tr>
-</tbody>
-</table>
-<h4 id="query-parameters">Query Parameters</h4>
-<ul>
-<li><strong>pretty</strong> - If parameter is <code>true</code>, response will formatted for humans.</li>
-<li><strong>explain</strong> - Return query explanation in addition to result. Values: <strong>full</strong>.</li>
-<li><strong>metrics</strong> - Return query performance metrics in addition to result. See <a href="#performance-metrics">Performance Metrics</a> for more detail.</li>
-<li><strong>instrument</strong> - Instrument query evaluation and return a superset of performance metrics in addition to result. See <a href="#performance-metrics">Performance Metrics</a> for more detail.</li>
-</ul>
-<h4 id="status-codes">Status Codes</h4>
-<ul>
-<li><strong>200</strong> - no error</li>
-<li><strong>400</strong> - bad request</li>
-<li><strong>500</strong> - server error</li>
-</ul>
 <h4 id="unconditional-results-from-partial-evaluation">Unconditional Results from Partial Evaluation</h4>
 <p>When you partially evaluate a query with the Compile API, OPA returns a new set of queries and supporting policies. However, in some cases, the result of Partial Evaluation is a conclusive, unconditional answer.</p>
 <p>For example, if you extend to policy above to include a &quot;break glass&quot; condition, the decision may be to allow all requests regardless of clearance level.</p>
@@ -3608,35 +3626,86 @@ allow {
   data.break_glass = <span class="hljs-keyword">true</span>
 }
 </code></pre>
-<p>In this case, if <code>data.break_glass</code> is <code>true</code> then the query <code>data.example.allow == true</code> will <em>always</em> be true. When your query is always true, OPA responds with an empty query in the query set:</p>
+<p>In this case, if <code>data.break_glass</code> is <code>true</code> then the query
+<code>data.example.allow == true</code> will <em>always</em> be true. If the query is
+always true, the <code>&quot;queries&quot;</code> value in the result will contain an empty
+array. The empty array indicates that your query can be satisfied
+without any further evaluation.</p>
 <pre><code class="lang-http">HTTP/1.1 <span class="hljs-number">200</span> OK
 <span class="hljs-attribute">Content-Type</span>: application/json
 </code></pre>
 <pre><code class="lang-json">{
-  <span class="hljs-string">&quot;queries&quot;</span>: [[]]
+  <span class="hljs-string">&quot;result&quot;</span>: {
+    <span class="hljs-string">&quot;queries&quot;</span>: [
+      [],
+      [
+        {
+          <span class="hljs-string">&quot;index&quot;</span>: <span class="hljs-number">0</span>,
+          <span class="hljs-string">&quot;terms&quot;</span>: [
+            {
+              <span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;ref&quot;</span>,
+              <span class="hljs-string">&quot;value&quot;</span>: [
+                {
+                  <span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;var&quot;</span>,
+                  <span class="hljs-string">&quot;value&quot;</span>: <span class="hljs-string">&quot;gte&quot;</span>
+                }
+              ]
+            },
+            {
+              <span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;number&quot;</span>,
+              <span class="hljs-string">&quot;value&quot;</span>: <span class="hljs-number">4</span>
+            },
+            {
+              <span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;ref&quot;</span>,
+              <span class="hljs-string">&quot;value&quot;</span>: [
+                {
+                  <span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;var&quot;</span>,
+                  <span class="hljs-string">&quot;value&quot;</span>: <span class="hljs-string">&quot;data&quot;</span>
+                },
+                {
+                  <span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>,
+                  <span class="hljs-string">&quot;value&quot;</span>: <span class="hljs-string">&quot;reports&quot;</span>
+                },
+                {
+                  <span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;var&quot;</span>,
+                  <span class="hljs-string">&quot;value&quot;</span>: <span class="hljs-string">&quot;$02&quot;</span>
+                },
+                {
+                  <span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>,
+                  <span class="hljs-string">&quot;value&quot;</span>: <span class="hljs-string">&quot;clearance_level&quot;</span>
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    ]
+  }
 }
 </code></pre>
-<p>It is also possible for queries to <em>never</em> be true. For example, the policy could be modified to deny all requests when the &quot;break glass&quot; condition is true.</p>
+<p>It is also possible for queries to <em>never</em> be true. For example, the
+original policy could be extended to require that users be granted an
+exception:</p>
 <pre><code class="lang-ruby">package example
 
 allow {
-  permit
-  <span class="hljs-keyword">not</span> deny
-}
-
-deny {
-  data.break_glass = <span class="hljs-keyword">true</span>
-}
-
-permit {
   input.subject.clearance_level &gt;= data.reports[<span class="hljs-number">_</span>].clearance_level
+  exceptions[input.subject.name]
 }
+
+exceptions[<span class="hljs-string">&quot;bob&quot;</span>]
+exceptions[<span class="hljs-string">&quot;alice&quot;</span>]
 </code></pre>
-<p>In this case, the OPA response will not contain a <code>queries</code> field.</p>
+<p>In this case, if we execute query on behalf of a user that does not
+have an exception (e.g., <code>&quot;eve&quot;</code>), the OPA response will not contain a
+<code>queries</code> field at all. This indicates there are NO conditions that
+could make the query true.</p>
 <pre><code class="lang-http">HTTP/1.1 <span class="hljs-number">200</span> OK
 <span class="hljs-attribute">Content-Type</span>: application/json
 </code></pre>
-<pre><code class="lang-json">{}
+<pre><code class="lang-json">{
+  <span class="hljs-string">&quot;result&quot;</span>: {}
+}
 </code></pre>
 <p>The following table summarizes the behavior for partial evaluation results.</p>
 <table>
@@ -3652,31 +3721,31 @@ permit {
 <tr>
 <td><code>input.x &gt; 0</code></td>
 <td><code>[&quot;input&quot;]</code></td>
-<td><code>{&quot;queries&quot;: [[input.x &gt; 0]]}</code></td>
+<td><code>{&quot;result&quot;: {&quot;queries&quot;: [[input.x &gt; 0]]}}</code></td>
 <td>The query is partially evaluated and remaining conditions are returned.</td>
 </tr>
 <tr>
 <td><code>input.x &gt; 0</code></td>
 <td>Not specified.</td>
-<td><code>{&quot;queries&quot;: [[input.x &gt; 0]]}</code></td>
+<td><code>{&quot;result&quot;: {&quot;queries&quot;: [[input.x &gt; 0]]}}</code></td>
 <td>If the set of unknowns is not specified, it defaults to <code>[&quot;input&quot;]</code>.</td>
 </tr>
 <tr>
 <td><code>input.x &gt; 0</code></td>
 <td><code>[]</code></td>
-<td><code>{}</code></td>
+<td><code>{&quot;result&quot;: {}}</code></td>
 <td>The query is false/undefined because there are no unknowns.</td>
 </tr>
 <tr>
 <td><code>1 &gt; 0</code></td>
 <td>N/A</td>
-<td><code>{&quot;queries&quot;: [[]]}</code></td>
+<td><code>{&quot;result&quot;: {&quot;queries&quot;: [[]]}}</code></td>
 <td>The query is always true.</td>
 </tr>
 <tr>
 <td><code>1 &lt; 0</code></td>
 <td>N/A</td>
-<td><code>{}</code></td>
+<td><code>{&quot;result&quot;: {}}</code></td>
 <td>The query is always false.</td>
 </tr>
 </tbody>
@@ -3718,7 +3787,9 @@ optional:</p>
     }
   ]
 }
-</code></pre><h2 id="explanations">Explanations</h2>
+</code></pre><h3 id="method-not-allowed">Method not Allowed</h3>
+<p>OPA will respond with a 405 Error (Method Not Allowed) if the method used to access the URL is not supported. For example, if a client uses the <em>HEAD</em> method to access any path within &quot;/v1/data/{path:.*}&quot;, a 405 will be returned.</p>
+<h2 id="explanations">Explanations</h2>
 <p>OPA supports query explanations that describe (in detail) the steps taken to
 produce query results.</p>
 <p>Explanations can be requested for:</p>
@@ -3922,7 +3993,7 @@ instrumentation off unless you are debugging a performance problem.</p>
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"REST API","level":"1.7","depth":1,"next":{"title":"Policy API","level":"1.7.1","depth":2,"anchor":"#policy-api","path":"rest-api.md","ref":"rest-api.md#policy-api","articles":[{"title":"List Policies","level":"1.7.1.1","depth":3,"anchor":"#list-policies","path":"rest-api.md","ref":"rest-api.md#list-policies","articles":[]},{"title":"Get a Policy","level":"1.7.1.2","depth":3,"anchor":"#get-a-policy","path":"rest-api.md","ref":"rest-api.md#get-a-policy","articles":[]},{"title":"Create or Update a Policy","level":"1.7.1.3","depth":3,"anchor":"#create-or-update-a-policy","path":"rest-api.md","ref":"rest-api.md#create-or-update-a-policy","articles":[]},{"title":"Delete a Policy","level":"1.7.1.4","depth":3,"anchor":"#delete-a-policy","path":"rest-api.md","ref":"rest-api.md#delete-a-policy","articles":[]}]},"previous":{"title":"Discovery","level":"1.6.7","depth":2,"anchor":"#discovery","path":"configuration.md","ref":"configuration.md#discovery","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":["header","addcssjs","collapsible-menu","custom-favicon","ga","-fontsettings","ace"],"pluginsConfig":{"collapsible-menu":{},"ace":{},"search":{},"layout":{"headerPath":"layouts/header.html"},"addcssjs":{"css":[],"js":[]},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"header":{},"highlight":{},"favicon":"images/favicon.png","custom-favicon":{},"ga":{"configuration":"auto","token":"UA-84550302-1"},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"rest-api.md","mtime":"2019-01-22T15:44:31.953Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2019-01-22T15:45:40.970Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"REST API","level":"1.7","depth":1,"next":{"title":"Policy API","level":"1.7.1","depth":2,"anchor":"#policy-api","path":"rest-api.md","ref":"rest-api.md#policy-api","articles":[{"title":"List Policies","level":"1.7.1.1","depth":3,"anchor":"#list-policies","path":"rest-api.md","ref":"rest-api.md#list-policies","articles":[]},{"title":"Get a Policy","level":"1.7.1.2","depth":3,"anchor":"#get-a-policy","path":"rest-api.md","ref":"rest-api.md#get-a-policy","articles":[]},{"title":"Create or Update a Policy","level":"1.7.1.3","depth":3,"anchor":"#create-or-update-a-policy","path":"rest-api.md","ref":"rest-api.md#create-or-update-a-policy","articles":[]},{"title":"Delete a Policy","level":"1.7.1.4","depth":3,"anchor":"#delete-a-policy","path":"rest-api.md","ref":"rest-api.md#delete-a-policy","articles":[]}]},"previous":{"title":"Discovery","level":"1.6.7","depth":2,"anchor":"#discovery","path":"configuration.md","ref":"configuration.md#discovery","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":["header","addcssjs","collapsible-menu","custom-favicon","ga","-fontsettings","ace"],"pluginsConfig":{"collapsible-menu":{},"ace":{},"search":{},"layout":{"headerPath":"layouts/header.html"},"addcssjs":{"css":[],"js":[]},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"header":{},"highlight":{},"favicon":"images/favicon.png","custom-favicon":{},"ga":{"configuration":"auto","token":"UA-84550302-1"},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"rest-api.md","mtime":"2019-02-19T21:05:45.213Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2019-02-19T21:06:41.554Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
