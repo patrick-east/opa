@@ -2374,7 +2374,7 @@ that writes events to a stream (e.g., stdout/stderr).</p>
     p.config = config.(Config)
 }
 
-<span class="hljs-keyword">func</span> (p *PrintlnLogger) Log(ctx context.Context, event logs.EventV1) {
+<span class="hljs-keyword">func</span> (p *PrintlnLogger) Log(ctx context.Context, event logs.EventV1) error {
     p.mtx.Lock()
     <span class="hljs-keyword">defer</span> p.mtx.Unlock()
     w := os.Stdout
@@ -2382,6 +2382,7 @@ that writes events to a stream (e.g., stdout/stderr).</p>
         w = os.Stderr
     }
     fmt.Fprintln(w, event) <span class="hljs-comment">// ignoring errors!</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>
 }
 </code></pre>
 <p>Next, implement a factory function that instantiates your plugin:</p>
@@ -2464,7 +2465,7 @@ log event written to stdout.</p>
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Plugins","level":"1.15","depth":1,"next":{"title":"FAQ","level":"1.16","depth":1,"path":"faq.md","ref":"faq.md","articles":[]},"previous":{"title":"Authentication and Authorization","level":"1.14.2","depth":2,"anchor":"#authentication-and-authorization","path":"security.md","ref":"security.md#authentication-and-authorization","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":["header","addcssjs","collapsible-menu","custom-favicon","ga","-fontsettings","ace"],"pluginsConfig":{"collapsible-menu":{},"ace":{},"search":{},"layout":{"headerPath":"layouts/header.html"},"addcssjs":{"css":[],"js":[]},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"header":{},"highlight":{},"favicon":"images/favicon.png","custom-favicon":{},"ga":{"configuration":"auto","token":"UA-84550302-1"},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"plugins.md","mtime":"2019-02-19T21:05:45.213Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2019-02-19T21:06:41.554Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Plugins","level":"1.15","depth":1,"next":{"title":"FAQ","level":"1.16","depth":1,"path":"faq.md","ref":"faq.md","articles":[]},"previous":{"title":"Authentication and Authorization","level":"1.14.2","depth":2,"anchor":"#authentication-and-authorization","path":"security.md","ref":"security.md#authentication-and-authorization","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":["header","addcssjs","collapsible-menu","custom-favicon","ga","-fontsettings","ace"],"pluginsConfig":{"collapsible-menu":{},"ace":{},"search":{},"layout":{"headerPath":"layouts/header.html"},"addcssjs":{"css":[],"js":[]},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"header":{},"highlight":{},"favicon":"images/favicon.png","custom-favicon":{},"ga":{"configuration":"auto","token":"UA-84550302-1"},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"plugins.md","mtime":"2019-02-25T16:39:01.995Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2019-02-25T16:40:05.292Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
