@@ -32,6 +32,8 @@ import (
 	"github.com/open-policy-agent/opa/server/types"
 	"github.com/open-policy-agent/opa/storage"
 	"github.com/open-policy-agent/opa/storage/inmem"
+	"github.com/open-policy-agent/opa/topdown"
+	opaTypes "github.com/open-policy-agent/opa/types"
 	"github.com/open-policy-agent/opa/util"
 	"github.com/open-policy-agent/opa/util/test"
 	"github.com/pkg/errors"
@@ -3357,4 +3359,143 @@ func TestShutdown(t *testing.T) {
 	if err != nil {
 		t.Errorf("unexpected error shutting down server: %s", err.Error())
 	}
+}
+
+func TestShutdownError(t *testing.T) {
+	// Setup our special helper builtin to block the server
+	waitChan, waitFunctionName := registerWaiterBuiltin(t.Name(), 10)
+
+	f := newFixture(t)
+
+	// start the servers listener loops
+	loops, err := f.server.Listeners()
+	if err != nil {
+		t.Fatalf("failed to get http listeners: %s", err.Error())
+	}
+
+	errChan := make(chan error)
+	for _, loop := range loops {
+		go func(serverLoop func() error) {
+			errChan <- serverLoop()
+		}(loop)
+	}
+
+	// !!!!!!
+	// There is a race here with the server starting and sending the request
+	// where we will get "connection refused" because the goroutine starting
+	// the listener wasn't as fast as the one making the request.
+	// Could maybe add retry logic to the request? Seems hacky...
+
+	// Send a request in the background that will block the server until we signal,
+	// (or the timeout hits, in an unexpected error condition)
+	// This is simulating a long running/slow/unlucky request being processed
+	// while the server is being shutdown.
+	reqChan := make(chan error)
+	go func(f *fixture) {
+		host := f.server.httpServers[0].Addr
+		if strings.HasPrefix(host, ":") {
+			// addr is just the port info like ":8182"
+			host = fmt.Sprintf("127.0.0.1%s", host)
+		}
+		url := fmt.Sprintf("http://%s/v1/query", host)
+		body := fmt.Sprintf(`{"query": "%s()"}`, waitFunctionName)
+		resp, err := http.Post(url, "application/json", strings.NewReader(body))
+		if err == nil {
+			if resp.StatusCode != http.StatusOK {
+				body, _ := ioutil.ReadAll(resp.Body)
+				err = fmt.Errorf("%s: %s", resp.Status, body)
+			}
+		}
+		reqChan <- err
+	}(f)
+
+	// Wait until the wait function has signaled us that it is running
+	// as it takes time for the request to be sent and processed.
+	select {
+	case <-waitChan:
+	case err = <-reqChan:
+		// It shouldn't have returned, but the request might have failed to send.
+		// If that happens we need to fail the test and prevent it from continuing.
+		t.Fatalf("request finished earlier than expected with err=%s", err)
+	}
+
+	// Create a context with a very short timeout
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(1)*time.Millisecond)
+	defer cancel()
+
+	// Attempt to shutdown the server, it should be blocked and timeout right away
+	err = f.server.Shutdown(ctx)
+	if err == nil {
+		t.Errorf("expected an error while shutting down the server but err==nil")
+	} else if !strings.Contains(err.Error(), "context deadline exceeded") {
+		t.Errorf("unexpected error when shutting down the server: %s", err.Error())
+	}
+
+	// Unblock the builtin function
+	select {
+	case waitChan <- true:
+	default:
+	}
+
+	// The request should have finished as soon as we signal to stop waiting.
+	// Because we aren't doing an os.Exit() or anything the response will still
+	// be sent and we expect it to not fail.
+	err = <-reqChan
+	if err != nil {
+		t.Fatalf("unexpected http request error: %s", err.Error())
+	}
+}
+
+// registerWaiterBuiltin will create and register a builtin function with
+// a given namespace prefix (to avoid collisions with other tests).
+// The channel returned will be used to send a signal when the function
+// has started and will be waiting, then the reverse direction to unblock
+// the function.
+// The timeout is a failsafe for tests that might fail without sending the
+// unblock signal in time.
+func registerWaiterBuiltin(namespace string, timeout int) (chan bool, string) {
+	functionName := fmt.Sprintf("testing.%s.wait_for_signal", namespace)
+
+	// Start by registering a special builtin generated for the caller
+	// It returns a boolean.. but really it will either suceed or timeout
+	// and return an error (in turn causing a 500 response back from the server)
+	var WaitBuiltin = &ast.Builtin{
+		Name: functionName,
+		Decl: opaTypes.NewFunction(
+			nil,
+			opaTypes.B,
+		),
+	}
+
+	waitChan := make(chan bool)
+
+	waitImpl := func(op1 ast.Value) (output ast.Value, err error) {
+		// Setup a timeout incase something goes wrong in the test, we don't want to
+		// block the unit tests entirely.
+		timeoutChan := make(chan bool)
+		go func() {
+			time.Sleep(time.Duration(timeout) * time.Second)
+			timeoutChan <- true
+		}()
+
+		// Let the caller (test) know we are ready, or we timeout waiting for them
+		// to read the signal.
+		select {
+		case waitChan <- true:
+		case <-timeoutChan:
+			return ast.Boolean(false), fmt.Errorf("timed out in %s after %d seconds", functionName, timeout)
+		}
+
+		// Now wait for the caller to signal we should unblock, or we timeout.
+		select {
+		case <-waitChan:
+			return ast.Boolean(true), nil
+		case <-timeoutChan:
+			return ast.Boolean(false), fmt.Errorf("timed out in %s after %d seconds", functionName, timeout)
+		}
+	}
+
+	ast.RegisterBuiltin(WaitBuiltin)
+	topdown.RegisterFunctionalBuiltin1(WaitBuiltin.Name, waitImpl)
+	return waitChan, functionName
 }
