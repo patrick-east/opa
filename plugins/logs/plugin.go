@@ -564,7 +564,7 @@ func (p *Plugin) logEvent(ctx context.Context, event EventV1) error {
 		return err
 	}
 	fields := logrus.Fields{}
-	err = json.Unmarshal(eventBuf, &fields)
+	err = util.UnmarshalJSON(eventBuf, &fields)
 	if err != nil {
 		return err
 	}
