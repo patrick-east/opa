@@ -93,6 +93,12 @@ func (c *Config) validateAndInjectDefaults(services []string, plugins []string) 
 		if !found {
 			return fmt.Errorf("invalid plugin name %q in decision_logs", *c.Plugin)
 		}
+	} else if c.Service == "" && len(services) != 0 && !c.ConsoleLogs {
+		// For backwards compatibility allow defaulting to the first
+		// service listed, but only if console logging is disabled. If enabled
+		// we can't tell if the deployer wanted to use only console logs or
+		// both console logs and the default service option.
+		c.Service = services[0]
 	} else if c.Service != "" {
 		found := false
 
