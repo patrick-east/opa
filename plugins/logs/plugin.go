@@ -244,21 +244,16 @@ func Lookup(manager *plugins.Manager) *Plugin {
 // Start starts the plugin.
 func (p *Plugin) Start(ctx context.Context) error {
 	p.logInfo("Starting decision logger.")
-	// only start the loop if we have a service or plugin
-	if !p.localOnly() {
-		go p.loop()
-	}
+	go p.loop()
 	return nil
 }
 
 // Stop stops the plugin.
 func (p *Plugin) Stop(ctx context.Context) {
 	p.logInfo("Stopping decision logger.")
-	if !p.localOnly() {
-		done := make(chan struct{})
-		p.stop <- done
-		_ = <-done
-	}
+	done := make(chan struct{})
+	p.stop <- done
+	_ = <-done
 }
 
 // Log appends a decision log event to the buffer for uploading.
@@ -357,7 +352,7 @@ func (p *Plugin) loop() {
 	for {
 		var err error
 
-		if p.config.Plugin == nil {
+		if p.config.Service != "" {
 			var uploaded bool
 			uploaded, err = p.oneShot(ctx)
 
@@ -380,7 +375,7 @@ func (p *Plugin) loop() {
 			delay = util.DefaultBackoff(float64(minRetryDelay), float64(*p.config.Reporting.MaxDelaySeconds), retry)
 		}
 
-		if p.config.Plugin == nil {
+		if p.config.Service != "" {
 			p.logDebug("Waiting %v before next upload/retry.", delay)
 		}
 
