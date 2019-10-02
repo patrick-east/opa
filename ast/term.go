@@ -822,7 +822,7 @@ func (v Var) IsWildcard() bool {
 
 // IsGenerated returns true if this variable was generated during compilation.
 func (v Var) IsGenerated() bool {
-	return strings.HasPrefix(string(v), "__local")
+	return strings.HasPrefix(string(v), "__local") || strings.HasPrefix(string(v), "__qlocal")
 }
 
 func (v Var) String() string {

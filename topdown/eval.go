@@ -36,6 +36,7 @@ type eval struct {
 	cancel          Cancel
 	query           ast.Body
 	index           int
+	indexing        bool
 	bindings        *bindings
 	store           storage.Store
 	baseCache       *baseCache
@@ -149,7 +150,12 @@ func (e *eval) traceEvent(op Op, x ast.Node, msg string) {
 	}
 
 	locals := ast.NewValueMap()
+	var localBindings []EventLocalBinding
 	e.bindings.Iter(nil, func(k, v *ast.Term) error {
+		// Stash a copy of the full terms for the local bindings
+		localBindings = append(localBindings, EventLocalBinding{Key: k.Copy(), Value: v.Copy()})
+
+		// For backwards compatibility save a copy of the values too..
 		locals.Put(k.Value, v.Value)
 		return nil
 	})
@@ -160,12 +166,13 @@ func (e *eval) traceEvent(op Op, x ast.Node, msg string) {
 	}
 
 	evt := &Event{
-		QueryID:  e.queryID,
-		ParentID: parentID,
-		Op:       op,
-		Node:     x,
-		Locals:   locals,
-		Message:  msg,
+		QueryID:       e.queryID,
+		ParentID:      parentID,
+		Op:            op,
+		Node:          x,
+		Locals:        locals,
+		LocalBindings: localBindings,
+		Message:       msg,
 	}
 
 	for i := range e.tracers {
@@ -1025,7 +1032,14 @@ func (e *eval) getRules(ref ast.Ref) (*ast.IndexResult, error) {
 		return nil, nil
 	}
 
-	result, err := index.Lookup(e)
+	var result *ast.IndexResult
+	var err error
+	if e.indexing {
+		result, err = index.Lookup(e)
+	} else {
+		result, err = index.AllRules(e)
+	}
+
 	if err != nil {
 		return nil, err
 	}

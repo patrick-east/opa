@@ -63,7 +63,7 @@ func newEvalCommandParams() evalCommandParams {
 			evalBindingsOutput,
 			evalPrettyOutput,
 		}),
-		explain: newExplainFlag([]string{explainModeOff, explainModeFull, explainModeNotes, explainModeFails}),
+		explain: newExplainFlag([]string{explainModeOff, explainModeFull, explainModeNotes, explainModeFails, explainModeDebug}),
 	}
 }
 
@@ -252,6 +252,7 @@ func eval(args []string, params evalCommandParams, w io.Writer) (bool, error) {
 	}
 
 	regoArgs := []func(*rego.Rego){rego.Query(query), rego.Runtime(info)}
+	var evalArgs []rego.EvalOption
 
 	if len(params.imports.v) > 0 {
 		regoArgs = append(regoArgs, rego.Imports(params.imports.v))
@@ -290,9 +291,14 @@ func eval(args []string, params evalCommandParams, w io.Writer) (bool, error) {
 		regoArgs = append(regoArgs, rego.ParsedInput(inputValue))
 	}
 
-	var tracer *topdown.BufferTracer
+	var tracer topdown.Tracer
 
 	if params.explain.String() != explainModeOff {
+		if params.explain.String() == explainModeDebug {
+			// Disable rule indexing for debug traces
+			evalArgs = append(evalArgs, rego.EvalRuleIndexing(false))
+		}
+
 		tracer = topdown.NewBufferTracer()
 		regoArgs = append(regoArgs, rego.Tracer(tracer))
 	}
@@ -339,26 +345,26 @@ func eval(args []string, params evalCommandParams, w io.Writer) (bool, error) {
 		pq, resultErr = eval.PrepareForEval(ctx)
 		if resultErr == nil {
 			parsedModules = pq.Modules()
-			result.Result, resultErr = pq.Eval(ctx)
+			result.Result, resultErr = pq.Eval(ctx, evalArgs...)
 		}
 	} else {
 		var pq rego.PreparedPartialQuery
 		pq, resultErr = eval.PrepareForPartial(ctx)
 		if resultErr == nil {
 			parsedModules = pq.Modules()
-			result.Partial, resultErr = eval.Partial(ctx)
+			result.Partial, resultErr = pq.Partial(ctx, evalArgs...)
 		}
 	}
 
 	result.Errors = pr.NewOutputErrors(resultErr)
 
 	switch params.explain.String() {
-	case explainModeFull:
-		result.Explanation = *tracer
+	case explainModeFull, explainModeDebug:
+		result.Explanation = *tracer.(*topdown.BufferTracer)
 	case explainModeNotes:
-		result.Explanation = lineage.Notes(*tracer)
+		result.Explanation = lineage.Notes(*tracer.(*topdown.BufferTracer))
 	case explainModeFails:
-		result.Explanation = lineage.Fails(*tracer)
+		result.Explanation = lineage.Fails(*tracer.(*topdown.BufferTracer))
 	}
 
 	if m != nil {

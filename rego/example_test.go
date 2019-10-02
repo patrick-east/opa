@@ -555,8 +555,8 @@ func ExampleRego_Partial() {
 
 	// Output:
 	//
-	// Query #1: "GET" = input.method; input.path = ["reviews", _]; input.is_admin
-	// Query #2: "GET" = input.method; input.path = ["reviews", user3]; user3 = input.user
+	// Query #1: "GET" = input.method; input.path = ["reviews", user1]; user1 = input.user
+	// Query #2: "GET" = input.method; input.path = ["reviews", _]; input.is_admin
 }
 
 func ExampleRego_Eval_tracer() {
@@ -699,11 +699,11 @@ func ExampleRego_PrepareForPartial() {
 	// Output:
 	//
 	// First evaluation
-	// Query #1: "GET" = input.method; input.path = ["reviews", _]; input.is_admin
-	// Query #2: "GET" = input.method; input.path = ["reviews", user3]; user3 = input.user
+	// Query #1: "GET" = input.method; input.path = ["reviews", user1]; user1 = input.user
+	// Query #2: "GET" = input.method; input.path = ["reviews", _]; input.is_admin
 	// Second evaluation
-	// Query #1: input.path = ["reviews", _]; input.is_admin
-	// Query #2: input.path = ["reviews", user3]; user3 = input.user
+	// Query #1: input.path = ["reviews", user1]; user1 = input.user
+	// Query #2: input.path = ["reviews", _]; input.is_admin
 }
 
 func ExampleRego_custom_functional_builtin() {

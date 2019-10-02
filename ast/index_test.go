@@ -559,3 +559,77 @@ func TestSplitStringEscaped(t *testing.T) {
 		})
 	}
 }
+
+func TestGetAllRules(t *testing.T) {
+	module := MustParseModule(`
+	package test
+	
+	default p = 42
+	
+	p {
+		1 == a
+	} else {
+		input.x = "x1"
+		input.y = "y1"
+	}
+
+	p {
+		input.z = "z1"
+	}
+	`)
+
+	index := newBaseDocEqIndex(func(Ref) bool { return false })
+
+	ok := index.Build(module.Rules)
+	if !ok {
+		t.Fatalf("Expected index build to succeed")
+	}
+
+	input := MustParseTerm(`{"x": "x1", "y": "y1"}`)
+
+	result, err := index.AllRules(testResolver{input: input})
+	if err != nil {
+		t.Fatalf("Unexpected error during index lookup: %v", err)
+	}
+
+	fmt.Println("----------------------")
+
+	fmt.Printf("default >>\n\t%+v\n\n", result.Default)
+
+	for i, r := range result.Rules {
+		fmt.Println("----------------------")
+		fmt.Printf("rule %d >>>\n\t%+v\n\n", i, r)
+		fmt.Printf("rule %d default >>>\n\t%+v\n\n", i, r.Default)
+		for j, e := range result.Else[r] {
+			fmt.Printf("rule %d else %d >>>\n t%+v\n\n", i, j, e)
+		}
+	}
+
+	t.Fail() // TODO ensure the rule for input.z shows up
+
+	// expectedRules := NewRuleSet(
+	// 	module.Rules[0],
+	// 	module.Rules[1],
+	// 	module.Rules[2].Else)
+	//
+	// expectedElse := map[*Rule]RuleSet{
+	// 	module.Rules[0]: []*Rule{
+	// 		module.Rules[0].Else,
+	// 		module.Rules[0].Else.Else,
+	// 	},
+	// }
+	//
+	// if result.Default != nil {
+	// 	t.Fatalf("Expected default rule to be nil")
+	// }
+	//
+	// if !NewRuleSet(result.Rules...).Equal(expectedRules) {
+	// 	t.Fatalf("Expected rules to be %v but got: %v", expectedRules, result.Rules)
+	// }
+	//
+	// r1 := module.Rules[0]
+	//
+	// if !NewRuleSet(result.Else[r1]...).Equal(expectedElse[r1]) {
+	// 	t.Fatalf("Expected else to be %v but got: %v", result.Else[r1], expectedElse[r1])
+	// }
+}

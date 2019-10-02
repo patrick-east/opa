@@ -5,6 +5,7 @@
 package topdown
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"strings"
@@ -44,14 +45,64 @@ const (
 	IndexOp Op = "Index"
 )
 
+// EventLocalVar represents a variable binding at the point in time
+// an event occurs.
+type EventLocalBinding struct {
+	Key   *ast.Term
+	Value *ast.Term
+}
+
+// MarshalJSON will format the event variable binding in a more
+// human understandable way and pull out fiends that are normally
+// hidden by the other JSON marshaller's on sub-types involved.
+func (e *EventLocalBinding) MarshalJSON() ([]byte, error) {
+	var keyText string
+	var valueText string
+
+	if e.Key.Loc() != nil {
+		keyText = string(e.Key.Loc().Text)
+	} else {
+		keyText = e.Key.Value.String()
+	}
+
+	if e.Value.Loc() != nil {
+		valueText = string(e.Value.Loc().Text)
+	} else {
+		valueText = e.Value.Value.String()
+	}
+
+	type jsonEventLocalBinding struct {
+		Internal ast.Value     `json:"internal"`
+		Text     string        `json:"text,omitempty"`
+		Location *ast.Location `json:"location,omitempty"`
+	}
+
+	return json.Marshal(struct {
+		Key   jsonEventLocalBinding `json:"key"`
+		Value jsonEventLocalBinding `json:"value"`
+	}{
+		Key: jsonEventLocalBinding{
+			Internal: e.Key.Value,
+			Text:     keyText,
+			Location: e.Key.Loc(),
+		},
+		Value: jsonEventLocalBinding{
+			Internal: e.Value.Value,
+			Text:     valueText,
+			Location: e.Value.Loc(),
+		},
+	})
+}
+
 // Event contains state associated with a tracing event.
 type Event struct {
-	Op       Op            // Identifies type of event.
-	Node     ast.Node      // Contains AST node relevant to the event.
-	QueryID  uint64        // Identifies the query this event belongs to.
-	ParentID uint64        // Identifies the parent query this event belongs to.
-	Locals   *ast.ValueMap // Contains local variable bindings from the query context.
-	Message  string        // Contains message for Note events.
+	Op            Op                  // Identifies type of event.
+	Node          ast.Node            // Contains AST node relevant to the event.
+	QueryID       uint64              // Identifies the query this event belongs to.
+	ParentID      uint64              // Identifies the parent query this event belongs to.
+	Locals        *ast.ValueMap       // Deprecated: Use LocalBindings instead.
+	LocalBindings []EventLocalBinding // Contains local variable bindings from the query context.
+	Message       string              // Contains message for Note events.
 }
 
 // HasRule returns true if the Event contains an ast.Rule.

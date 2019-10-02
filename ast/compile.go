@@ -78,6 +78,10 @@ type Compiler struct {
 	// TypeEnv holds type information for values inferred by the compiler.
 	TypeEnv *TypeEnv
 
+	// RewrittenVars is a mapping of variables that have been rewritten
+	// with the key being the generated name and value being the original.
+	RewrittenVars map[Var]Var
+
 	localvargen  *localVarGenerator
 	moduleLoader ModuleLoader
 	ruleIndices  *util.HashMap
@@ -201,8 +205,9 @@ const compileStageMetricPrefex = "ast_compile_stage_"
 func NewCompiler() *Compiler {
 
 	c := &Compiler{
-		Modules: map[string]*Module{},
-		TypeEnv: NewTypeEnv(),
+		Modules:       map[string]*Module{},
+		TypeEnv:       NewTypeEnv(),
+		RewrittenVars: map[Var]Var{},
 		ruleIndices: util.NewHashMap(func(a, b util.T) bool {
 			r1, r2 := a.(Ref), b.(Ref)
 			return r1.Equal(r2)
@@ -1050,21 +1055,27 @@ func (c *Compiler) rewriteLocalVars() {
 			//
 			// p = xs { x := 2; xs = [x | x := 1] } becomes p = xs { __local0__ = 2; xs = [__local1__ | __local1__ = 1] }
 			WalkTerms(rule.Head, func(term *Term) bool {
+				stop := false
+				stack := newLocalDeclaredVars()
 				switch v := term.Value.(type) {
 				case *ArrayComprehension:
-					stack := newLocalDeclaredVars()
 					errs = rewriteDeclaredVarsInArrayComprehension(gen, stack, v, errs)
-					return true
+					stop = true
 				case *SetComprehension:
-					stack := newLocalDeclaredVars()
 					errs = rewriteDeclaredVarsInSetComprehension(gen, stack, v, errs)
-					return true
+					stop = true
 				case *ObjectComprehension:
-					stack := newLocalDeclaredVars()
 					errs = rewriteDeclaredVarsInObjectComprehension(gen, stack, v, errs)
-					return true
+					stop = true
 				}
-				return false
+
+				for k, v := range stack.all {
+					if k != v {
+						c.RewrittenVars[k] = v
+					}
+				}
+
+				return stop
 			})
 
 			for _, err := range errs {
@@ -1082,9 +1093,18 @@ func (c *Compiler) rewriteLocalVars() {
 				used.Update(rule.Head.Value.Vars())
 			}
 
-			body, declared, errs := rewriteLocalVars(gen, rule.Head.Args.Vars(), used, rule.Body)
+			stack := newLocalDeclaredVars()
+			body, declared, errs := rewriteLocalVars(gen, stack, rule.Head.Args.Vars(), used, rule.Body)
 			for _, err := range errs {
 				c.err(err)
+			}
+
+			// For rewritten vars use the collection of all variables that
+			// were in the stack at some point in time.
+			for k, v := range stack.all {
+				if k != v {
+					c.RewrittenVars[k] = v
+				}
 			}
 
 			rule.Body = body
@@ -1294,7 +1314,7 @@ func (qc *queryCompiler) resolveRefs(qctx *QueryContext, body Body) (Body, error
 }
 
 func (qc *queryCompiler) rewriteComprehensionTerms(_ *QueryContext, body Body) (Body, error) {
-	gen := newLocalVarGenerator(body)
+	gen := newLocalVarGenerator("q", body)
 	f := newEqualityFactory(gen)
 	node, err := rewriteComprehensionTerms(f, body)
 	if err != nil {
@@ -1304,19 +1324,19 @@ func (qc *queryCompiler) rewriteComprehensionTerms(_ *QueryContext, body Body) (
 }
 
 func (qc *queryCompiler) rewriteDynamicTerms(_ *QueryContext, body Body) (Body, error) {
-	gen := newLocalVarGenerator(body)
+	gen := newLocalVarGenerator("q", body)
 	f := newEqualityFactory(gen)
 	return rewriteDynamics(f, body), nil
 }
 
 func (qc *queryCompiler) rewriteExprTerms(_ *QueryContext, body Body) (Body, error) {
-	gen := newLocalVarGenerator(body)
+	gen := newLocalVarGenerator("q", body)
 	return rewriteExprTermsInBody(gen, body), nil
 }
 
 func (qc *queryCompiler) rewriteLocalVars(_ *QueryContext, body Body) (Body, error) {
-	gen := newLocalVarGenerator(body)
-	body, declared, err := rewriteLocalVars(gen, nil, nil, body)
+	gen := newLocalVarGenerator("q", body)
+	body, declared, err := rewriteLocalVars(gen, newLocalDeclaredVars(), nil, nil, body)
 	if len(err) != 0 {
 		return nil, err
 	}
@@ -1373,7 +1393,7 @@ func (qc *queryCompiler) checkUnsafeBuiltins(qctx *QueryContext, body Body) (Bod
 }
 
 func (qc *queryCompiler) rewriteWithModifiers(qctx *QueryContext, body Body) (Body, error) {
-	f := newEqualityFactory(newLocalVarGenerator(body))
+	f := newEqualityFactory(newLocalVarGenerator("q", body))
 	body, err := rewriteWithModifiersInBody(qc.compiler, f, body)
 	if err != nil {
 		return nil, Errors{err}
@@ -2111,6 +2131,7 @@ func (f *equalityFactory) Generate(other *Term) *Expr {
 
 type localVarGenerator struct {
 	exclude VarSet
+	prefix  string
 	next    int
 }
 
@@ -2123,16 +2144,16 @@ func newLocalVarGeneratorForModuleSet(sorted []string, modules map[string]*Modul
 	return &localVarGenerator{exclude: exclude, next: 0}
 }
 
-func newLocalVarGenerator(node interface{}) *localVarGenerator {
+func newLocalVarGenerator(prefix string, node interface{}) *localVarGenerator {
 	exclude := NewVarSet()
 	vis := &VarVisitor{vars: exclude}
 	Walk(vis, node)
-	return &localVarGenerator{exclude: exclude, next: 0}
+	return &localVarGenerator{exclude: exclude, prefix: prefix, next: 0}
 }
 
 func (l *localVarGenerator) Generate() Var {
 	for {
-		result := Var("__local" + strconv.Itoa(l.next) + "__")
+		result := Var("__" + l.prefix + "local" + strconv.Itoa(l.next) + "__")
 		l.next++
 		if !l.exclude.Contains(result) {
 			return result
@@ -2758,7 +2779,10 @@ func expandExprTermSlice(gen *localVarGenerator, v []*Term) (support []*Expr) {
 	return
 }
 
-type localDeclaredVars []*declaredVarSet
+type localDeclaredVars struct {
+	vars []*declaredVarSet
+	all  map[Var]Var
+}
 
 type varOccurrence int
 
@@ -2785,34 +2809,42 @@ func newDeclaredVarSet() *declaredVarSet {
 }
 
 func newLocalDeclaredVars() *localDeclaredVars {
-	return &localDeclaredVars{newDeclaredVarSet()}
+	return &localDeclaredVars{
+		vars: []*declaredVarSet{newDeclaredVarSet()},
+		all:  map[Var]Var{},
+	}
 }
 
 func (s *localDeclaredVars) Push() {
-	*s = append(*s, newDeclaredVarSet())
+	s.vars = append(s.vars, newDeclaredVarSet())
 }
 
 func (s *localDeclaredVars) Pop() *declaredVarSet {
-	sl := *s
+	sl := s.vars
 	curr := sl[len(sl)-1]
-	*s = sl[:len(sl)-1]
+	s.vars = sl[:len(sl)-1]
 	return curr
 }
 
 func (s localDeclaredVars) Peek() *declaredVarSet {
-	return s[len(s)-1]
+	return s.vars[len(s.vars)-1]
 }
 
 func (s localDeclaredVars) Insert(x, y Var, occurrence varOccurrence) {
-	elem := s[len(s)-1]
+	elem := s.vars[len(s.vars)-1]
 	elem.vs[x] = y
 	elem.reverse[y] = x
 	elem.occurrence[x] = occurrence
+
+	// Insert the variables to the map of all we've seen,
+	// it should build a full mapping of all variables we
+	// have seen, rewritten ones where x != y.
+	s.all[x] = y
 }
 
 func (s localDeclaredVars) Declared(x Var) (y Var, ok bool) {
-	for i := len(s) - 1; i >= 0; i-- {
-		if y, ok = s[i].vs[x]; ok {
+	for i := len(s.vars) - 1; i >= 0; i-- {
+		if y, ok = s.vars[i].vs[x]; ok {
 			return
 		}
 	}
@@ -2822,7 +2854,7 @@ func (s localDeclaredVars) Declared(x Var) (y Var, ok bool) {
 // Occurrence returns a flag that indicates whether x has occurred in the
 // current scope.
 func (s localDeclaredVars) Occurrence(x Var) varOccurrence {
-	return s[len(s)-1].occurrence[x]
+	return s.vars[len(s.vars)-1].occurrence[x]
 }
 
 // rewriteLocalVars rewrites bodies to remove assignment/declaration
@@ -2835,8 +2867,7 @@ func (s localDeclaredVars) Occurrence(x Var) varOccurrence {
 // __local0__ = 1; p[__local0__]
 //
 // During rewriting, assignees are validated to prevent use before declaration.
-func rewriteLocalVars(g *localVarGenerator, args VarSet, used VarSet, body Body) (Body, map[Var]Var, Errors) {
-	stack := newLocalDeclaredVars()
+func rewriteLocalVars(g *localVarGenerator, stack *localDeclaredVars, args VarSet, used VarSet, body Body) (Body, map[Var]Var, Errors) {
 	for v := range args {
 		stack.Insert(v, v, argVar)
 	}

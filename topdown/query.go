@@ -35,6 +35,7 @@ type Query struct {
 	genvarprefix     string
 	runtime          *ast.Term
 	builtins         map[string]*Builtin
+	indexing         bool
 }
 
 // Builtin represents a built-in function that queries can call.
@@ -48,6 +49,7 @@ func NewQuery(query ast.Body) *Query {
 	return &Query{
 		query:        query,
 		genvarprefix: ast.WildcardPrefix,
+		indexing:     true,
 	}
 }
 
@@ -139,6 +141,11 @@ func (q *Query) WithRuntime(runtime *ast.Term) *Query {
 // query.
 func (q *Query) WithBuiltins(builtins map[string]*Builtin) *Query {
 	q.builtins = builtins
+	return q
+}
+
+func (q *Query) WithIndexing(enabled bool) *Query {
+	q.indexing = enabled
 	return q
 }
 
@@ -264,6 +271,7 @@ func (q *Query) Iter(ctx context.Context, iter func(QueryResult) error) error {
 		virtualCache: newVirtualCache(),
 		genvarprefix: q.genvarprefix,
 		runtime:      q.runtime,
+		indexing:     q.indexing,
 	}
 	q.startTimer(metrics.RegoQueryEval)
 	err := e.Run(func(e *eval) error {

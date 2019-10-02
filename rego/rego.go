@@ -84,6 +84,7 @@ type EvalContext struct {
 	unknowns         []string
 	disableInlining  []ast.Ref
 	parsedUnknowns   []*ast.Term
+	indexing         bool
 }
 
 // EvalOption defines a function to set an option on an EvalConfig
@@ -168,6 +169,14 @@ func EvalParsedUnknowns(unknowns []*ast.Term) EvalOption {
 	}
 }
 
+// EvalDisableIndexing will disable indexing optimizations for the
+// evaluation. This should only be used when tracing in debug mode.
+func EvalRuleIndexing(enabled bool) EvalOption {
+	return func(e *EvalContext) {
+		e.indexing = enabled
+	}
+}
+
 func (pq preparedQuery) Modules() map[string]*ast.Module {
 	mods := make(map[string]*ast.Module)
 
@@ -202,6 +211,7 @@ func (pq preparedQuery) newEvalContext(ctx context.Context, options []EvalOption
 		unknowns:         pq.r.unknowns,
 		parsedUnknowns:   pq.r.parsedUnknowns,
 		compiledQuery:    compiledQuery{},
+		indexing:         true,
 	}
 
 	for _, o := range options {
@@ -1458,7 +1468,8 @@ func (r *Rego) eval(ctx context.Context, ectx *EvalContext) (ResultSet, error) {
 		WithBuiltins(r.builtinFuncs).
 		WithMetrics(ectx.metrics).
 		WithInstrumentation(ectx.instrumentation).
-		WithRuntime(r.runtime)
+		WithRuntime(r.runtime).
+		WithIndexing(ectx.indexing)
 
 	for i := range ectx.tracers {
 		q = q.WithTracer(ectx.tracers[i])
