@@ -340,7 +340,7 @@
                                 <div class="highlight">
                                         <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
                                           <code class="language-live"
-                                                data-lang="live:kubernetes_registry_check_desktop:module:openable">package kubernetes.admission
+                                                data-lang="live:kubernetes_registry_check_desktop:module:openable,read_only">package kubernetes.admission
 
 deny[msg] {
     input.request.kind.kind == "Pod"
@@ -408,7 +408,7 @@ deny[msg] {
                                 <div class="highlight">
                                         <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
                                           <code class="language-live"
-                                                data-lang="live:kubernetes_ingress_check_desktop:module:openable">package kubernetes.admission
+                                                data-lang="live:kubernetes_ingress_check_desktop:module:openable,read_only">package kubernetes.admission
 # Reject any ingress with the same host as an existing ingress
 deny[msg] {
     input.request.kind.kind == "Ingress"
@@ -531,7 +531,7 @@ deny[msg] {
                               <div class="highlight">
                                       <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
                                         <code class="language-live"
-                                              data-lang="live:envoy_get_pets_desktop:module:openable">package envoy.authz
+                                              data-lang="live:envoy_get_pets_desktop:module:openable,read_only">package envoy.authz
 
 # allow all GET requests to /pets
 default allow = false
@@ -614,7 +614,7 @@ allow {
                               <div class="highlight">
                                       <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
                                         <code class="language-live"
-                                              data-lang="live:envoy_get_pets_owners_desktop:module:openable">package envoy.authz
+                                              data-lang="live:envoy_get_pets_owners_desktop:module:openable,read_only">package envoy.authz
 import input.attributes.request.http as http_request
 
 # allow only the frontend service to GET /pets/owners
@@ -693,7 +693,7 @@ source_spiffe_id = client_id {
                               <div class="highlight">
                                       <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
                                         <code class="language-live"
-                                              data-lang="live:app_check_owner_desktop:module:openable">package application.authz
+                                              data-lang="live:app_check_owner_desktop:module:openable,read_only">package application.authz
 
 # Only owner can update the pet's information
 # Ownership information is provided as part of OPA's input
@@ -744,7 +744,7 @@ allow {
                               <div class="highlight">
                                       <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
                                         <code class="language-live"
-                                              data-lang="live:app_jwt_auth_desktop:module:openable">
+                                              data-lang="live:app_jwt_auth_desktop:module:openable,read_only">
 package application.authz
 
 # Everyone can see adopted pets
@@ -916,7 +916,7 @@ allowed_pets[pet] {
                         <div class="highlight">
                             <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
                               <code class="language-live"
-                                    data-lang="live:kubernetes_registry_check_mobile:module:openable">package kubernetes.admission
+                                    data-lang="live:kubernetes_registry_check_mobile:module:openable,read_only">package kubernetes.admission
 
 deny[msg] {
     input.request.kind.kind == "Pod"
@@ -984,7 +984,7 @@ deny[msg] {
                         <div class="highlight">
                             <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
                               <code class="language-live"
-                                    data-lang="live:kubernetes_ingress_check_mobile:module:openable">package kubernetes.admission
+                                    data-lang="live:kubernetes_ingress_check_mobile:module:openable,read_only">package kubernetes.admission
 
 # Reject any ingress with the same host as an existing ingress
 deny[msg] {
@@ -1130,7 +1130,7 @@ deny[msg] {
                         <div class="highlight">
                             <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
                               <code class="language-live"
-                                    data-lang="live:envoy_get_pets_mobile:module:openable">package envoy.authz
+                                    data-lang="live:envoy_get_pets_mobile:module:openable,read_only">package envoy.authz
 
 # allow all GET requests to /pets
 default allow = false
@@ -1213,7 +1213,7 @@ allow {
                         <div class="highlight">
                             <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
                               <code class="language-live"
-                                    data-lang="live:envoy_get_pets_owners_mobile:module:openable">package envoy.authz
+                                    data-lang="live:envoy_get_pets_owners_mobile:module:openable,read_only">package envoy.authz
 import input.attributes.request.http as http_request
 
 # allow only the frontend service to GET /pets/owners
@@ -1297,7 +1297,7 @@ source_spiffe_id = client_id {
                         <div class="highlight">
                             <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
                               <code class="language-live"
-                                    data-lang="live:app_check_owner_mobile:module:openable">package application.authz
+                                    data-lang="live:app_check_owner_mobile:module:openable,read_only">package application.authz
 
 # Only owner can update the pet's information
 # Ownership information is provided as part of OPA's input
@@ -1348,7 +1348,7 @@ allow {
                         <div class="highlight">
                             <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
                               <code class="language-live"
-                                    data-lang="live:app_jwt_auth_mobile:module:openable">
+                                    data-lang="live:app_jwt_auth_mobile:module:openable,read_only">
 package application.authz
 
 # Everyone can see adopted pets
