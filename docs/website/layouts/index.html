@@ -259,15 +259,15 @@
                             <div class="nav flex-column nav-pills"
                                  id="v-pills-tab" role="tablist"
                                  aria-orientation="vertical">
-                              <a class="nav-link active" id="v-pills-home-tab"
-                                 data-toggle="pill" href="#v-pills-home"
-                                 role="tab" aria-controls="v-pills-home"
+                              <a class="nav-link active" id="v-pills-k8s-1-desktop-tab"
+                                 data-toggle="pill" href="#v-pills-k8s-1-desktop-content"
+                                 role="tab" aria-controls="v-pills-k8s-1-desktop-content"
                                  aria-selected="true">Ensure all images come
                                 from a trusted registry</a>
-                              <a class="nav-link" id="v-pills-profile-tab"
-                                 data-toggle="pill" href="#v-pills-profile"
+                              <a class="nav-link" id="v-pills-k8s-2-desktop-tab"
+                                 data-toggle="pill" href="#v-pills-k8s-2-desktop-content"
                                  role="tab"
-                                 aria-controls="v-pills-profile"
+                                 aria-controls="v-pills-k8s-2-desktop-content"
                                  aria-selected="false">Stop ingresses from using
                                 the same host name</a>
                             </div>
@@ -277,8 +277,8 @@
                           <div class="declarative-right">
                             <div class="tab-content code-tab-content" id="v-pills-tabContent">
                               <div class="tab-pane fade show active"
-                                   id="v-pills-home" role="tabpanel"
-                                   aria-labelledby="v-pills-home-tab">
+                                   id="v-pills-k8s-1-desktop-content" role="tabpanel"
+                                   aria-labelledby="v-pills-k8s-1-desktop-tab">
                                 <div class="col-12 highlight">
                                         <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
                                           <code class="language-live"
@@ -337,9 +337,9 @@ deny[msg] {
                                         </pre>
                                 </div>
                               </div>
-                              <div class="tab-pane fade" id="v-pills-profile"
+                              <div class="tab-pane fade" id="v-pills-k8s-2-desktop-content"
                                    role="tabpanel"
-                                   aria-labelledby="v-pills-profile-tab">
+                                   aria-labelledby="v-pills-k8s-2-desktop-tab">
                                 <div class="col-12 highlight">
                                         <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
                                           <code class="language-live"
@@ -429,14 +429,14 @@ deny[msg] {
                           <div class="nav flex-column nav-pills"
                                id="v-pills-tab" role="tablist"
                                aria-orientation="vertical">
-                            <a class="nav-link active" id="v-pills-home-tab"
-                               data-toggle="pill" href="#v-pills-one"
-                               role="tab" aria-controls="v-pills-home"
+                            <a class="nav-link active" id="v-pills-envoy-1-desktop-tab"
+                               data-toggle="pill" href="#v-pills-envoy-1-desktop-content"
+                               role="tab" aria-controls="v-pills-envoy-1-desktop-content"
                                aria-selected="true">Allow everyone to run GET on
                               <code>/pets</code></a>
-                            <a class="nav-link" id="v-pills-profile-tab"
-                               data-toggle="pill" href="#v-pills-two" role="tab"
-                               aria-controls="v-pills-profile"
+                            <a class="nav-link" id="v-pills-envoy-2-desktop-tab"
+                               data-toggle="pill" href="#v-pills-envoy-2-desktop-content" role="tab"
+                               aria-controls="v-pills-envoy-2-desktop-content"
                                aria-selected="false">Allow frontend service to
                               run GET on <code>/pets/owners</code></a>
 
@@ -448,8 +448,8 @@ deny[msg] {
                           <div class="tab-content code-tab-content" id="v-pills-tabContent">
 
                             <div class="tab-pane fade show active"
-                                 id="v-pills-one" role="tabpanel"
-                                 aria-labelledby="v-pills-home-tab">
+                                 id="v-pills-envoy-1-desktop-content" role="tabpanel"
+                                 aria-labelledby="v-pills-envoy-1-desktop-tab">
                               <div class="col-12 highlight">
                                       <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
                                         <code class="language-live"
@@ -528,9 +528,9 @@ allow {
                                       </pre>
                               </div>
                             </div>
-                            <div class="tab-pane fade" id="v-pills-two"
+                            <div class="tab-pane fade" id="v-pills-envoy-2-desktop-content"
                                  role="tabpanel"
-                                 aria-labelledby="v-pills-profile-tab">
+                                 aria-labelledby="v-pills-envoy-2-desktop-tab">
                               <div class="col-12 highlight">
                                       <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
                                         <code class="language-live"
@@ -630,14 +630,14 @@ source_spiffe_id = client_id {
                           <div class="nav flex-column nav-pills"
                                id="v-pills-tab" role="tablist"
                                aria-orientation="vertical">
-                            <a class="nav-link active" id="v-pills-home-tab"
-                               data-toggle="pill" href="#v-pills-five"
-                               role="tab" aria-controls="v-pills-home"
+                            <a class="nav-link active" id="v-pills-app-1-desktop-tab"
+                               data-toggle="pill" href="#v-pills-app-1-desktop-content"
+                               role="tab" aria-controls="v-pills-app-1-desktop-content"
                                aria-selected="true">Only the pet's owner can
                               update that pet's information</a>
-                            <a class="nav-link" id="v-pills-profile-tab"
-                               data-toggle="pill" href="#v-pills-six" role="tab"
-                               aria-controls="v-pills-profile"
+                            <a class="nav-link" id="v-pills-app-2-desktop-tab"
+                               data-toggle="pill" href="#v-pills-app-2-desktop-content" role="tab"
+                               aria-controls="v-pills-app-2-desktop-content"
                                aria-selected="false">Only employees,
                               authenticated with a JWT, can see already adopted
                               pets</a>
@@ -649,8 +649,8 @@ source_spiffe_id = client_id {
                         <div class="declarative-right">
                           <div class="tab-content code-tab-content" id="v-pills-tabContent">
                             <div class="tab-pane fade show active"
-                                 id="v-pills-five" role="tabpanel"
-                                 aria-labelledby="v-pills-home-tab">
+                                 id="v-pills-app-1-desktop-content" role="tabpanel"
+                                 aria-labelledby="v-pills-app-1-desktop-tab">
                               <div class="col-12 highlight">
                                       <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
                                         <code class="language-live"
@@ -693,9 +693,9 @@ allow {
                                       </pre>
                               </div>
                             </div>
-                            <div class="tab-pane fade" id="v-pills-six"
+                            <div class="tab-pane fade" id="v-pills-app-2-desktop-content"
                                  role="tabpanel"
-                                 aria-labelledby="v-pills-profile-tab">
+                                 aria-labelledby="v-pills-app-2-desktop-tab">
                               <div class="col-12 highlight">
                                       <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
                                         <code class="language-live"
@@ -836,14 +836,14 @@ allowed_pets[pet] {
                     <div class="current"></div>
                     <div class="nav flex-column nav-pills" id="v-pills-tab"
                          role="tablist" aria-orientation="vertical">
-                      <a class="nav-link active" id="v-pills-home-tab"
-                         data-toggle="pill" href="#v-pills-home"
-                         role="tab" aria-controls="v-pills-home"
+                      <a class="nav-link active" id="v-pills-k8s-1-mobile-tab"
+                         data-toggle="pill" href="#v-pills-k8s-1-mobile-content"
+                         role="tab" aria-controls="v-pills-k8s-1-mobile-content"
                          aria-selected="true">Ensure all images come from a
                         trusted registry</a>
-                      <a class="nav-link" id="v-pills-profile-tab"
-                         data-toggle="pill" href="#v-pills-profile" role="tab"
-                         aria-controls="v-pills-profile" aria-selected="false">Stop
+                      <a class="nav-link" id="v-pills-k8s-2-mobile-content-tab"
+                         data-toggle="pill" href="#v-pills-k8s-2-mobile-content" role="tab"
+                         aria-controls="v-pills-k8s-2-mobile-content" aria-selected="false">Stop
                         ingresses from using the same host name</a>
 
                     </div>
@@ -852,9 +852,9 @@ allowed_pets[pet] {
                 <div class="col-12 col-sm-12 col-md-12 col-lg-8 ">
                   <div class="declarative-right">
                     <div class="tab-content code-tab-content" id="v-pills-tabContent">
-                      <div class="tab-pane fade show active" id="v-pills-home"
+                      <div class="tab-pane fade show active" id="v-pills-k8s-1-mobile-content"
                            role="tabpanel"
-                           aria-labelledby="v-pills-home-tab">
+                           aria-labelledby="v-pills-k8s-1-mobile-content-tab">
                         <div class="col-12 highlight">
                             <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
                               <code class="language-live"
@@ -913,9 +913,9 @@ deny[msg] {
                             </pre>
                         </div>
                       </div>
-                      <div class="tab-pane fade" id="v-pills-profile"
+                      <div class="tab-pane fade" id="v-pills-k8s-2-mobile-content"
                            role="tabpanel"
-                           aria-labelledby="v-pills-profile-tab">
+                           aria-labelledby="v-pills-k8s-2-mobile-content-tab">
                         <div class="col-12 highlight">
                             <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
                               <code class="language-live"
@@ -1029,14 +1029,14 @@ deny[msg] {
 
                     <div class="nav flex-column nav-pills" id="v-pills-tab"
                          role="tablist" aria-orientation="vertical">
-                      <a class="nav-link active" id="v-pills-home-tab"
-                         data-toggle="pill" href="#v-pills-one"
-                         role="tab" aria-controls="v-pills-home"
+                      <a class="nav-link active" id="v-pills-envoy-1-mobile-tab"
+                         data-toggle="pill" href="#v-pills-envoy-1-mobile-content"
+                         role="tab" aria-controls="v-pills-envoy-1-mobile-content"
                          aria-selected="true">Allow everyone to run GET on
                         <code>/pets</code></a>
-                      <a class="nav-link" id="v-pills-profile-tab"
-                         data-toggle="pill" href="#v-pills-two" role="tab"
-                         aria-controls="v-pills-profile" aria-selected="false">Allow
+                      <a class="nav-link" id="v-pills-envoy-2-mobile-tab"
+                         data-toggle="pill" href="#v-pills-envoy-2-mobile-content" role="tab"
+                         aria-controls="v-pills-envoy-2-mobile-content" aria-selected="false">Allow
                         frontend service to run GET on <code>/pets/owners</code></a>
 
                     </div>
@@ -1046,9 +1046,9 @@ deny[msg] {
                   <div class="declarative-right">
                     <div class="tab-content code-tab-content" id="v-pills-tabContent">
 
-                      <div class="tab-pane fade show active" id="v-pills-one"
+                      <div class="tab-pane fade show active" id="v-pills-envoy-1-mobile-content"
                            role="tabpanel"
-                           aria-labelledby="v-pills-home-tab">
+                           aria-labelledby="v-pills-envoy-1-mobile-tab">
                         <div class="col-12 highlight">
                             <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
                               <code class="language-live"
@@ -1127,9 +1127,9 @@ allow {
                             </pre>
                         </div>
                       </div>
-                      <div class="tab-pane fade" id="v-pills-two"
+                      <div class="tab-pane fade" id="v-pills-envoy-2-mobile-content"
                            role="tabpanel"
-                           aria-labelledby="v-pills-profile-tab">
+                           aria-labelledby="v-pills-envoy-2-mobile-tab">
                         <div class="col-12 highlight">
                             <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
                               <code class="language-live"
@@ -1235,14 +1235,14 @@ source_spiffe_id = client_id {
                   <div class="declarative-left">
                     <div class="nav flex-column nav-pills" id="v-pills-tab"
                          role="tablist" aria-orientation="vertical">
-                      <a class="nav-link active" id="v-pills-home-tab"
-                         data-toggle="pill" href="#v-pills-five"
-                         role="tab" aria-controls="v-pills-home"
+                      <a class="nav-link active" id="v-pills-app-1-mobile-tab"
+                         data-toggle="pill" href="#v-pills-app-1-mobile-content"
+                         role="tab" aria-controls="v-pills-app-1-mobile-content"
                          aria-selected="true">Only the pet's owner can update
                         that pet's information</a>
-                      <a class="nav-link" id="v-pills-profile-tab"
-                         data-toggle="pill" href="#v-pills-six" role="tab"
-                         aria-controls="v-pills-profile" aria-selected="false">Only
+                      <a class="nav-link" id="v-pills-app-2-mobile-tab"
+                         data-toggle="pill" href="#v-pills-app-2-mobile-content" role="tab"
+                         aria-controls="v-pills-app-2-mobile-content" aria-selected="false">Only
                         employees, authenticated with a JWT, can see already
                         adopted pets</a>
 
@@ -1252,9 +1252,9 @@ source_spiffe_id = client_id {
                 <div class="col-12  col-sm-12 col-md-12 col-lg-8">
                   <div class="declarative-right">
                     <div class="tab-content code-tab-content" id="v-pills-tabContent">
-                      <div class="tab-pane fade show active" id="v-pills-five"
+                      <div class="tab-pane fade show active" id="v-pills-app-1-mobile-content"
                            role="tabpanel"
-                           aria-labelledby="v-pills-home-tab">
+                           aria-labelledby="v-pills-app-1-mobile-tab">
                         <div class="col-12 highlight">
                             <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
                               <code class="language-live"
@@ -1297,9 +1297,9 @@ allow {
                             </pre>
                         </div>
                       </div>
-                      <div class="tab-pane fade" id="v-pills-six"
+                      <div class="tab-pane fade" id="v-pills-app-2-mobile-content"
                            role="tabpanel"
-                           aria-labelledby="v-pills-profile-tab">
+                           aria-labelledby="v-pills-app-2-mobile-tab">
                         <div class="col-12 highlight">
                             <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
                               <code class="language-live"
@@ -1398,7 +1398,7 @@ allowed_pets[pet] {
       <div class="row">
         <div class="col-12">
           <div class="mt-5 text-center blue">
-            <button class="btn btn-primary"><a><span>Learn More:</span> <a
+            <button class="btn btn-primary"><span>Learn More:</span> <a
                         href="./docs/latest/kubernetes-introduction/">Kubernetes</a>
                 - <a
                         href="./docs/latest/envoy-authorization/">Envoy</a> - <a
@@ -1609,7 +1609,7 @@ allowed_pets[pet] {
       </div>
     </div>
   </section>
-  
+
   <!-- jQuery first, then Popper.js, then Bootstrap JS -->
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
           integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
