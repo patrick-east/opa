@@ -362,8 +362,7 @@ a {
 
 
 .declarative-right {
-    margin-bottom: 35px;
-    margin-right: 25px;
+    height: 100%;
 }
 
 .subparagraph {
@@ -1817,11 +1816,24 @@ h4 {
     display: none; /* TODO: Fix this at some point? */
 }
 
+.code-tab-content {
+    box-shadow: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
 @media screen and (max-width: 1023px) {
     .desktopView {
         display: none;
     }
+
+    .code-tab-content {
+        box-shadow: none;
+        border: none;
+        padding: 0;
+        margin-left: 10px;
+        margin-right: 10px;
+    }
 }
-
-
 
