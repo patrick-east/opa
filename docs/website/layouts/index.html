@@ -1519,22 +1519,6 @@ allowed_pets[pet] {
     </script>
 
   <script>
-    var tabsFive = document.getElementById("tabs-5");
-    var tabFive = document.getElementById("tab-5");
-    var tabsSix = document.getElementById("tabs-6");
-    var tabSix = document.getElementById("tab-6");
-
-    tabsFive.addEventListener('click', () => {
-      this.tabFive.classList.add("toshow");
-      this.tabFive.style.display = "block";
-      this.tabSix.style.display = "none";
-    });
-
-    tabsSix.addEventListener('click', () => {
-      this.tabSix.classList.add("toshow");
-      this.tabFive.style.display = 'none';
-      this.tabSix.style.display = "block";
-    });
 
     $('a[data-toggle="pill"],a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
         $(".CodeMirror").each(function () {
