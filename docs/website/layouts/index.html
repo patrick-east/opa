@@ -280,9 +280,9 @@
                                    id="v-pills-k8s-1-desktop-content" role="tabpanel"
                                    aria-labelledby="v-pills-k8s-1-desktop-tab">
                                 <div class="col-12 highlight">
-                                        <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
-                                          <code class="language-live"
-                                                data-lang="live:kubernetes_registry_check_desktop:input:hidden">
+                                  <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+                                    <code class="language-live"
+                                          data-lang="live:kubernetes_registry_check_desktop:input:hidden">
 {
     "apiVersion": "admission.k8s.io/v1beta1",
     "kind": "AdmissionReview",
@@ -315,9 +315,10 @@
                                         </pre>
                                 </div>
                                 <div class="highlight">
+                                    <a onclick='window.open("https://play.openpolicyagent.org/p/ikesWCFIH8")'>
                                         <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
                                           <code class="language-live"
-                                                data-lang="live:kubernetes_registry_check_desktop:module:openable,read_only">package kubernetes.admission
+                                                data-lang="live:kubernetes_registry_check_desktop:module:read_only">package kubernetes.admission
 
 deny[msg] {
     input.request.kind.kind == "Pod"
@@ -328,22 +329,23 @@ deny[msg] {
 }
                                           </code>
                                         </pre>
+                                    </a>
                                 </div>
                                 <div class="highlight">
-                                        <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
-                                          <code class="language-live"
-                                                data-lang="live:kubernetes_registry_check_desktop:output:hidden">
-                                          </code>
-                                        </pre>
+                                  <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+                                    <code class="language-live"
+                                          data-lang="live:kubernetes_registry_check_desktop:output:hidden">
+                                    </code>
+                                  </pre>
                                 </div>
                               </div>
                               <div class="tab-pane fade" id="v-pills-k8s-2-desktop-content"
                                    role="tabpanel"
                                    aria-labelledby="v-pills-k8s-2-desktop-tab">
                                 <div class="col-12 highlight">
-                                        <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
-                                          <code class="language-live"
-                                                data-lang="live:kubernetes_ingress_check_desktop:input:hidden">
+                                  <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+                                    <code class="language-live"
+                                          data-lang="live:kubernetes_ingress_check_desktop:input:hidden">
 {
     "apiVersion": "admission.k8s.io/v1beta1",
     "kind": "AdmissionReview",
@@ -379,13 +381,14 @@ deny[msg] {
         }
     }
 }
-                                          </code>
-                                        </pre>
+                                    </code>
+                                  </pre>
                                 </div>
                                 <div class="highlight">
-                                        <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
-                                          <code class="language-live"
-                                                data-lang="live:kubernetes_ingress_check_desktop:module:openable,read_only">package kubernetes.admission
+                                  <a onclick='window.open("https://play.openpolicyagent.org/p/oL4Ofd1nQi")'>
+                                    <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+                                      <code class="language-live"
+                                            data-lang="live:kubernetes_ingress_check_desktop:module:read_only">package kubernetes.admission
 # Reject any ingress with the same host as an existing ingress
 deny[msg] {
     input.request.kind.kind == "Ingress"
@@ -399,26 +402,24 @@ deny[msg] {
     newhost == oldhost
     msg := sprintf("ingress host conflicts with ingress %v/%v", [namespace, name])
 }
-                                          </code>
-                                        </pre>
+                                      </code>
+                                    </pre>
+                                  </a>
                                 </div>
 
                                 <div class="highlight">
-                                        <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
-                                          <code class="language-live"
-                                                data-lang="live:kubernetes_ingress_check_desktop:output:hidden">
-                                            <!-- example output -->
-                                          </code>
-                                        </pre>
+                                    <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+                                      <code class="language-live"
+                                            data-lang="live:kubernetes_ingress_check_desktop:output:hidden">
+                                        <!-- example output -->
+                                      </code>
+                                    </pre>
                                 </div>
                               </div>
-
-
                             </div>
                           </div>
                         </div>
                       </div>
-
                     </div>
                   </div>
                   <div class="tab-pane" id="tabs-2" role="tabpanel">
@@ -451,9 +452,9 @@ deny[msg] {
                                  id="v-pills-envoy-1-desktop-content" role="tabpanel"
                                  aria-labelledby="v-pills-envoy-1-desktop-tab">
                               <div class="col-12 highlight">
-                                      <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
-                                        <code class="language-live"
-                                              data-lang="live:envoy_get_pets_desktop:input:hidden">
+                                <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+                                  <code class="language-live"
+                                        data-lang="live:envoy_get_pets_desktop:input:hidden">
 {
     "attributes": {
         "destination": {
@@ -502,13 +503,14 @@ deny[msg] {
         "pets"
     ]
 }
-                                        </code>
-                                      </pre>
+                                  </code>
+                                </pre>
                               </div>
                               <div class="highlight">
-                                      <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
-                                        <code class="language-live"
-                                              data-lang="live:envoy_get_pets_desktop:module:openable,read_only">package envoy.authz
+                                <a onclick='window.open("https://play.openpolicyagent.org/p/DqXNKeLm20")'>
+                                  <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+                                    <code class="language-live"
+                                          data-lang="live:envoy_get_pets_desktop:module:read_only">package envoy.authz
 
 # allow all GET requests to /pets
 default allow = false
@@ -516,25 +518,26 @@ allow {
     input.attributes.request.http.method == "GET"
     input.attributes.request.http.path == "/pets"
 }
-                                        </code>
-                                      </pre>
+                                    </code>
+                                  </pre>
+                                </a>
                               </div>
                               <div class="highlight">
-                                      <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
-                                        <code class="language-live"
-                                              data-lang="live:envoy_get_pets_desktop:output:hidden">
-                                          <!-- example output -->
-                                        </code>
-                                      </pre>
+                                <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+                                  <code class="language-live"
+                                        data-lang="live:envoy_get_pets_desktop:output:hidden">
+                                    <!-- example output -->
+                                  </code>
+                                </pre>
                               </div>
                             </div>
                             <div class="tab-pane fade" id="v-pills-envoy-2-desktop-content"
                                  role="tabpanel"
                                  aria-labelledby="v-pills-envoy-2-desktop-tab">
                               <div class="col-12 highlight">
-                                      <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
-                                        <code class="language-live"
-                                              data-lang="live:envoy_get_pets_owners_desktop:input:hidden">
+                                <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+                                  <code class="language-live"
+                                        data-lang="live:envoy_get_pets_owners_desktop:input:hidden">
 {
     "attributes": {
         "destination": {
@@ -585,13 +588,14 @@ allow {
         "owners"
     ]
 }
-                                        </code>
-                                      </pre>
+                                  </code>
+                                </pre>
                               </div>
                               <div class="highlight">
+                                <a onclick='window.open("https://play.openpolicyagent.org/p/FiFAMwNoqm")'>
                                       <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
                                         <code class="language-live"
-                                              data-lang="live:envoy_get_pets_owners_desktop:module:openable,read_only">package envoy.authz
+                                              data-lang="live:envoy_get_pets_owners_desktop:module:read_only">package envoy.authz
 import input.attributes.request.http as http_request
 
 # allow only the frontend service to GET /pets/owners
@@ -606,16 +610,17 @@ source_spiffe_id = client_id {
     [_, _, uri_type_san] := split(http_request.headers["x-forwarded-client-cert"], ";")
     [_, client_id] := split(uri_type_san, "=")
 }
-                                        </code>
-                                      </pre>
+                                    </code>
+                                  </pre>
+                                </a>
                               </div>
                               <div class="highlight">
-                                      <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
-                                        <code class="language-live"
-                                              data-lang="live:envoy_get_pets_owners_desktop:output:hidden">
-                                          <!-- example output -->
-                                        </code>
-                                      </pre>
+                                <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+                                  <code class="language-live"
+                                        data-lang="live:envoy_get_pets_owners_desktop:output:hidden">
+                                    <!-- example output -->
+                                  </code>
+                                </pre>
                               </div>
                             </div>
                           </div>
@@ -652,9 +657,9 @@ source_spiffe_id = client_id {
                                  id="v-pills-app-1-desktop-content" role="tabpanel"
                                  aria-labelledby="v-pills-app-1-desktop-tab">
                               <div class="col-12 highlight">
-                                      <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
-                                        <code class="language-live"
-                                              data-lang="live:app_check_owner_desktop:input:hidden">
+                                  <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+                                    <code class="language-live"
+                                          data-lang="live:app_check_owner_desktop:input:hidden">
 {
     "method": "PUT",
     "owner": "bob@hooli.com",
@@ -664,13 +669,14 @@ source_spiffe_id = client_id {
     ],
     "user": "alice@hooli.com"
 }
-                                        </code>
-                                      </pre>
+                                    </code>
+                                  </pre>
                               </div>
                               <div class="highlight">
-                                      <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
-                                        <code class="language-live"
-                                              data-lang="live:app_check_owner_desktop:module:openable,read_only">package application.authz
+                                <a onclick='window.open("https://play.openpolicyagent.org/p/qUkvgJRpIU")'>
+                                  <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+                                    <code class="language-live"
+                                          data-lang="live:app_check_owner_desktop:module:read_only">package application.authz
 
 # Only owner can update the pet's information
 # Ownership information is provided as part of OPA's input
@@ -681,25 +687,26 @@ allow {
     input.path = ["pets", petid]
     input.user == input.owner
 }
-                                        </code>
-                                      </pre>
+                                    </code>
+                                  </pre>
+                                </a>
                               </div>
                               <div class="highlight">
-                                      <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
-                                        <code class="language-live"
-                                              data-lang="live:app_check_owner_desktop:output:hidden">
-                                          <!-- example output -->
-                                        </code>
-                                      </pre>
+                                <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+                                  <code class="language-live"
+                                        data-lang="live:app_check_owner_desktop:output:hidden">
+                                    <!-- example output -->
+                                  </code>
+                                </pre>
                               </div>
                             </div>
                             <div class="tab-pane fade" id="v-pills-app-2-desktop-content"
                                  role="tabpanel"
                                  aria-labelledby="v-pills-app-2-desktop-tab">
                               <div class="col-12 highlight">
-                                      <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
-                                        <code class="language-live"
-                                              data-lang="live:app_jwt_auth_desktop:input:hidden">
+                                <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+                                  <code class="language-live"
+                                        data-lang="live:app_jwt_auth_desktop:input:hidden">
 {
     "pet_list": [
         {
@@ -715,13 +722,14 @@ allow {
     ],
     "token": "eyJ1IjoiSFMyNTYiLCJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoiYWxpY2UiLCJlbXBsb3llZSI6dHJ1ZSwibmFtZSI6IkFsaWNlIFNtaXRoIn0.vMBYEW8VK9XM7yPkKTu1C3Gy1tOq1A0d4-xYMkkRpEc"
 }
-                              </code>
-                                      </pre>
+                                  </code>
+                                </pre>
                               </div>
                               <div class="highlight">
-                                      <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
-                                        <code class="language-live"
-                                              data-lang="live:app_jwt_auth_desktop:module:openable,read_only">
+                                <a onclick='window.open("https://play.openpolicyagent.org/p/c6412EHjS7")'>
+                                  <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+                                    <code class="language-live"
+                                          data-lang="live:app_jwt_auth_desktop:module:read_only">
 package application.authz
 
 # Everyone can see adopted pets
@@ -738,8 +746,9 @@ allowed_pets[pet] {
     some i
     pet := input.pet_list[i]
 }
-                                        </code>
-                                      </pre>
+                                    </code>
+                                  </pre>
+                                </a>
                               </div>
                               <div class="highlight">
                                       <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
@@ -891,9 +900,10 @@ allowed_pets[pet] {
                             </pre>
                         </div>
                         <div class="highlight">
+                          <a onclick='window.open("https://play.openpolicyagent.org/p/ikesWCFIH8")'>
                             <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
                               <code class="language-live"
-                                    data-lang="live:kubernetes_registry_check_mobile:module:openable,read_only">package kubernetes.admission
+                                    data-lang="live:kubernetes_registry_check_mobile:module:read_only">package kubernetes.admission
 
 deny[msg] {
     input.request.kind.kind == "Pod"
@@ -904,6 +914,7 @@ deny[msg] {
 }
                               </code>
                             </pre>
+                          </a>
                         </div>
                         <div class="highlight">
                             <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
@@ -959,9 +970,10 @@ deny[msg] {
                             </pre>
                         </div>
                         <div class="highlight">
+                          <a onclick='window.open("https://play.openpolicyagent.org/p/oL4Ofd1nQi")'>
                             <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
                               <code class="language-live"
-                                    data-lang="live:kubernetes_ingress_check_mobile:module:openable,read_only">package kubernetes.admission
+                                    data-lang="live:kubernetes_ingress_check_mobile:module:read_only">package kubernetes.admission
 
 # Reject any ingress with the same host as an existing ingress
 deny[msg] {
@@ -976,29 +988,10 @@ deny[msg] {
     newhost == oldhost
     msg := sprintf("ingress host conflicts with ingress %v/%v", [namespace, name])
 }
-                                                                </code>
+                              </code>
                             </pre>
+                          </a>
                         </div>
-                        <!-- # Hardcoded for demo.  In reality injected into OPA through API
-                        ingresses = {
-                          "foo": {
-                            "dev": {
-                              "apiVersion": "extensions/v1beta1",
-                              "kind": "Ingress",
-                              "metadata": {
-                                "name": "dev",
-                                "namespace": "foo"
-                              },
-                              "spec": {
-                                "rules": [{
-                                  "host": "initech.com",
-                                  "http": {
-                                    "paths": [{
-                                      "path": "/finance",
-                                      "backend": {
-                                        "serviceName": "banking",
-                                        "servicePort": 443
-                        }}]}}]}}}} -->
                         <div class="highlight">
                             <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
                               <code class="language-live"
@@ -1105,9 +1098,10 @@ deny[msg] {
                             </pre>
                         </div>
                         <div class="highlight">
+                          <a onclick='window.open("https://play.openpolicyagent.org/p/DqXNKeLm20")'>
                             <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
                               <code class="language-live"
-                                    data-lang="live:envoy_get_pets_mobile:module:openable,read_only">package envoy.authz
+                                    data-lang="live:envoy_get_pets_mobile:module:read_only">package envoy.authz
 
 # allow all GET requests to /pets
 default allow = false
@@ -1117,6 +1111,7 @@ allow {
 }
                               </code>
                             </pre>
+                          </a>
                         </div>
                         <div class="highlight">
                             <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
@@ -1188,9 +1183,10 @@ allow {
                             </pre>
                         </div>
                         <div class="highlight">
+                          <a onclick='window.open("https://play.openpolicyagent.org/p/FiFAMwNoqm")'>
                             <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
                               <code class="language-live"
-                                    data-lang="live:envoy_get_pets_owners_mobile:module:openable,read_only">package envoy.authz
+                                    data-lang="live:envoy_get_pets_owners_mobile:module:read_only">package envoy.authz
 import input.attributes.request.http as http_request
 
 # allow only the frontend service to GET /pets/owners
@@ -1207,6 +1203,7 @@ source_spiffe_id = client_id {
 }
                               </code>
                             </pre>
+                          </a>
                         </div>
                         <div class="highlight">
                             <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
@@ -1272,9 +1269,10 @@ source_spiffe_id = client_id {
                             </pre>
                         </div>
                         <div class="highlight">
+                          <a onclick='window.open("https://play.openpolicyagent.org/p/qUkvgJRpIU")'>
                             <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
                               <code class="language-live"
-                                    data-lang="live:app_check_owner_mobile:module:openable,read_only">package application.authz
+                                    data-lang="live:app_check_owner_mobile:module:read_only">package application.authz
 
 # Only owner can update the pet's information
 # Ownership information is provided as part of OPA's input
@@ -1287,6 +1285,7 @@ allow {
 }
                               </code>
                             </pre>
+                          </a>
                         </div>
                         <div class="highlight">
                             <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
@@ -1301,6 +1300,7 @@ allow {
                            role="tabpanel"
                            aria-labelledby="v-pills-app-2-mobile-tab">
                         <div class="col-12 highlight">
+                          <a onclick='window.open("https://play.openpolicyagent.org/p/c6412EHjS7")'>
                             <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
                               <code class="language-live"
                                     data-lang="live:app_jwt_auth_mobile:input:hidden">
@@ -1321,11 +1321,12 @@ allow {
 }
                               </code>
                             </pre>
+                          </a>
                         </div>
                         <div class="highlight">
                             <pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
                               <code class="language-live"
-                                    data-lang="live:app_jwt_auth_mobile:module:openable,read_only">
+                                    data-lang="live:app_jwt_auth_mobile:module:read_only">
 package application.authz
 
 # Everyone can see adopted pets

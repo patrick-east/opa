@@ -1810,6 +1810,16 @@ h4 {
     padding: 0;
     margin: 0;
     font-size: 1rem;
+    cursor: pointer;
+}
+
+.live--block-container .CodeMirror-lines {
+    cursor: pointer;
+}
+
+.CodeMirror-cursor, div.CodeMirror-cursor {
+    opacity: 1;
+    display: none;
 }
 
 .live--icon-bar--outer {
