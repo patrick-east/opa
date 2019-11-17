@@ -366,11 +366,6 @@ a {
     margin-right: 25px;
 }
 
-/*
-.paddingAll{
-    padding: 25px;
-} */
-
 .subparagraph {
     padding-top: 15px;
 }
@@ -499,7 +494,6 @@ h3 {
 
 .tab-content > .tab-pane {
     width: 100%;
-    /* overflow-x: auto; */
 }
 
 
