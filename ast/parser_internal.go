@@ -567,7 +567,7 @@ func makeNumber(loc *Location, text interface{}) (interface{}, error) {
 		return nil, fmt.Errorf("number too big")
 	}
 
-	return NumberTerm(json.Number(f.String())).SetLocation(loc), nil
+	return NumberTerm(json.Number(string(text.([]byte)))).SetLocation(loc), nil
 }
 
 func makeString(loc *Location, text interface{}) (interface{}, error) {
