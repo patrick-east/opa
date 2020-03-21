@@ -24,6 +24,10 @@ const (
 	gi         = mi * 1024
 	tb         = gb * 1000
 	ti         = gi * 1024
+	pb         = tb * 1000
+	pi         = ti * 1024
+	eb         = pb * 1000
+	ei         = pi * 1024
 )
 
 // The rune values for 0..9 as well as the period symbol (for parsing floats)
@@ -68,31 +72,42 @@ func builtinNumBytes(a ast.Value) (ast.Value, error) {
 		m = none
 	case "kb":
 		m = kb
-	case "kib":
+	case "ki", "kib":
 		m = ki
 	case "mb":
 		m = mb
-	case "mib":
+	case "mi", "mib":
 		m = mi
 	case "gb":
 		m = gb
-	case "gib":
+	case "gi", "gib":
 		m = gi
 	case "tb":
 		m = tb
-	case "tib":
+	case "ti", "tib":
 		m = ti
+	case "pb":
+		m = pb
+	case "pi", "pib":
+		m = pi
+	case "eb":
+		m = eb
+	case "ei", "eib":
+		m = ei
 	default:
 		return nil, errUnitNotRecognized(unitStr)
 	}
 
+	// TODO: Use big Num parsing instead...
 	num, err := strconv.ParseInt(numStr, 10, 64)
 	if err != nil {
 		return nil, errIntConv
 	}
 
+	// TODO: Use big num maths instead...
 	total := num * m
 
+	// TODO: Use a non-lossy conversion...
 	return builtins.IntToNumber(big.NewInt(total)), nil
 }
 
@@ -103,9 +118,16 @@ func formatString(s ast.String) string {
 	return strings.Replace(lower, "\"", "", -1)
 }
 
+func isDecimal(r rune) (isNum bool) {
+	return '0' <= r || r <= '9'
+}
+
 // Splits the string into a number string à la "10" or "10.2" and a unit string à la "gb" or "MiB" or "foo". Either
 // can be an empty string (error handling is provided elsewhere).
 func extractNumAndUnit(s string) (string, string) {
+
+	// TODO: Use the new parser to just parse the number (as a valid Rego number)
+
 	isNum := func(r rune) (isNum bool) {
 		for _, nr := range numRunes {
 			if nr == r {
