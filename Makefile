@@ -73,7 +73,7 @@ go-build: generate
 
 .PHONY: go-test
 go-test: generate
-	$(GO) test -tags=slow ./...
+	CGO_ENABLED=1 GO111MODULE=on GOFLAGS=-mod=vendor go test -race -tags=slow ./...
 
 .PHONY: perf
 perf: generate
