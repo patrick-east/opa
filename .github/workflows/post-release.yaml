@@ -23,7 +23,6 @@ jobs:
 
       - name: Build Release Assets
         run: make release VERSION=${OPA_VERSION}
-        timeout-minutes: 20
 
       - name: Upload Release Assets
         run: |
