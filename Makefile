@@ -2,7 +2,7 @@
 # Use of this source code is governed by an Apache2
 # license that can be found in the LICENSE file.
 
-VERSION := 0.22.0-dev
+VERSION := 99.9.9-10
 
 CGO_ENABLED ?= 0
 
@@ -268,15 +268,20 @@ push-image: docker-login image-quick push
 deploy-travis: push-image tag-edge push-edge push-binary-edge
 
 .PHONY: release-travis
-# Don't tag and push "latest" image tags if the version is a release candidate
-ifneq (,$(findstring rc,$(VERSION)))
-release-travis: push-image
+# Don't tag and push "latest" image tags if the version is a release candidate or a bugfix branch
+# where the changes don't exist in master
+ifneq (,$(or $(findstring rc,$(VERSION)), $(findstring release-,$(shell git branch --contains HEAD))))
+#release-travis: push-image
+release-travis:
+	echo "just push"
 else
-release-travis: push-image tag-latest push-latest
+#release-travis: push-image tag-latest push-latest
+release-travis:
+	echo "with latest"
 endif
 
 .PHONY: release-bugfix-travis
-release-bugfix-travis: deploy-travis
+release-bugfix-travis: push-image
 
 .PHONY: netlify-prod
 netlify-prod: clean docs-clean build docs-generate docs-production-build
