@@ -178,6 +178,11 @@ func TestOutputVarsForNode(t *testing.T) {
 			query: "x = 1; y = x; z = y",
 			exp:   "{x, y, z}",
 		},
+		{
+			note:  "ref operand - object element",
+			query: "{{}.t}",
+			exp:   "set()",
+		},
 	}
 
 	for _, tc := range tests {
