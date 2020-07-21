@@ -2258,7 +2258,9 @@ func (vis *bodySafetyVisitor) checkComprehensionSafety(tv VarSet, body Body) Bod
 	}
 
 	// Check body for safety, reordering as necessary.
+	fmt.Printf("body before: %+v", body)
 	r, u := reorderBodyForSafety(vis.builtins, vis.arity, vis.globals, body)
+	fmt.Printf("\n--> body after: %+v\n\n", r)
 	if len(u) == 0 {
 		return r
 	}

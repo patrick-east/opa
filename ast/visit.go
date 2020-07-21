@@ -4,6 +4,10 @@
 
 package ast
 
+import (
+	"fmt"
+)
+
 // Visitor defines the interface for iterating AST elements. The Visit function
 // can return a Visitor w which will be used to visit the children of the AST
 // element v. If the Visit function returns nil, the children will not be
@@ -336,8 +340,28 @@ func (vis *GenericVisitor) Walk(x interface{}) {
 		}
 	case Object:
 		for _, k := range x.Keys() {
+			o := x.(*object)
+			fmt.Printf("\n---------------\n\n")
+			fmt.Printf("BEFORE:\n")
+			fmt.Printf("\tx = %+v\n", x.String())
+			fmt.Printf("\tk = %+v\n", k.String())
+			fmt.Printf("\tx.Get(k) = %+v\n", x.Get(k))
+			fmt.Printf("\tkeys = %+v\n", o.keys)
+			fmt.Printf("\telems = %+v\n", o.elems)
+			fmt.Printf("\tk.Hash() = %+v\n", k.Hash())
+			fmt.Printf("\to.elems[k.Hash()] = %+v\n", o.elems[k.Hash()])
 			vis.Walk(k)
-			vis.Walk(x.Get(k))
+			fmt.Printf("AFTER:\n")
+			fmt.Printf("\tx = %+v\n", x.String())
+			fmt.Printf("\tk = %+v\n", k.String())
+			fmt.Printf("\tx.Get(k) = %+v\n", x.Get(k))
+			fmt.Printf("\tkeys = %+v\n", o.keys)
+			fmt.Printf("\telems = %+v\n", o.elems)
+			fmt.Printf("\tk.Hash() = %+v\n", k.Hash())
+			fmt.Printf("\to.elems[k.Hash()]= %+v\n", o.elems[k.Hash()])
+			v := x.Get(k)
+			fmt.Printf("\nattempting to walk on value = %+v\n", v)
+			vis.Walk(v)
 		}
 	case Array:
 		for _, t := range x {
