@@ -7,6 +7,7 @@ package plugins
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
 	"github.com/open-policy-agent/opa/ast"
@@ -16,6 +17,7 @@ import (
 	initload "github.com/open-policy-agent/opa/internal/runtime/init"
 	"github.com/open-policy-agent/opa/loader"
 	"github.com/open-policy-agent/opa/plugins/rest"
+	"github.com/open-policy-agent/opa/resolver/wasm"
 	"github.com/open-policy-agent/opa/storage"
 	"github.com/open-policy-agent/opa/topdown/cache"
 )
@@ -126,6 +128,8 @@ type Manager struct {
 
 	compiler                     *ast.Compiler
 	compilerMux                  sync.RWMutex
+	wasmResolvers                map[*ast.Ref]*wasm.Resolver
+	wasmResolversMtx             sync.RWMutex
 	services                     map[string]rest.Client
 	keys                         map[string]*bundle.KeyConfig
 	plugins                      []namedplugin
@@ -141,8 +145,10 @@ type Manager struct {
 }
 
 type managerContextKey string
+type managerWasmResolverKey string
 
 const managerCompilerContextKey = managerContextKey("compiler")
+const managerWasmResolverContextKey = managerWasmResolverKey("wasmResolvers")
 
 // SetCompilerOnContext puts the compiler into the storage context. Calling this
 // function before committing updated policies to storage allows the manager to
@@ -159,6 +165,23 @@ func GetCompilerOnContext(context *storage.Context) *ast.Compiler {
 		return nil
 	}
 	return compiler
+}
+
+// SetWasmResolversOnContext puts a set of Wasm Resolvers into the storage
+// context. Calling this function before committing updated wasm modules to
+// storage allows the manager to skip initializing modules before using them.
+// Instead, the manager will use the compiler that was stored on the context.
+func SetWasmResolversOnContext(context *storage.Context, rs map[*ast.Ref]*wasm.Resolver) {
+	context.Put(managerWasmResolverContextKey, rs)
+}
+
+// getWasmResolversOnContext gets the resolvers cached on the storage context.
+func getWasmResolversOnContext(context *storage.Context) map[*ast.Ref]*wasm.Resolver {
+	resolvers, ok := context.Get(managerWasmResolverContextKey).(map[*ast.Ref]*wasm.Resolver)
+	if !ok {
+		return nil
+	}
+	return resolvers
 }
 
 type namedplugin struct {
@@ -349,6 +372,19 @@ func (m *Manager) RegisterCompilerTrigger(f func(txn storage.Transaction)) {
 	m.registeredTriggers = append(m.registeredTriggers, f)
 }
 
+// GetWasmResolvers returns the manager's set of Wasm Resolvers.
+func (m *Manager) GetWasmResolvers() map[*ast.Ref]*wasm.Resolver {
+	m.wasmResolversMtx.RLock()
+	defer m.wasmResolversMtx.RUnlock()
+	return m.wasmResolvers
+}
+
+func (m *Manager) setWasmResolvers(rs map[*ast.Ref]*wasm.Resolver) {
+	m.wasmResolversMtx.Lock()
+	defer m.wasmResolversMtx.Unlock()
+	m.wasmResolvers = rs
+}
+
 // Start starts the manager. Init() should be called once before Start().
 func (m *Manager) Start(ctx context.Context) error {
 
@@ -508,6 +544,27 @@ func (m *Manager) onCommit(ctx context.Context, txn storage.Transaction, event s
 			f(txn)
 		}
 	}
+
+	// Similar to the compiler, look for a set of resolvers on the transaction
+	// context. If they are not set we may need to reload from the store.
+	resolvers := getWasmResolversOnContext(event.Context)
+	if resolvers != nil {
+		m.setWasmResolvers(resolvers)
+
+	} else if event.DataChanged() {
+		if requiresWasmResolverReload(event) {
+			resolvers, err := loadWasmResolversFromStore(ctx, m.Store, txn)
+			if err != nil {
+				panic(err)
+			}
+			m.setWasmResolvers(resolvers)
+		} else {
+			err := m.updateWasmResolversData(ctx, txn)
+			if err != nil {
+				panic(err)
+			}
+		}
+	}
 }
 
 func loadCompilerFromStore(ctx context.Context, store storage.Store, txn storage.Transaction) (*ast.Compiler, error) {
@@ -532,6 +589,84 @@ func loadCompilerFromStore(ctx context.Context, store storage.Store, txn storage
 	compiler := ast.NewCompiler()
 	compiler.Compile(modules)
 	return compiler, nil
+}
+
+func requiresWasmResolverReload(event storage.TriggerEvent) bool {
+	// If the data changes touched the bundle path (which includes
+	// the wasm modules) we will reload them. Otherwise update
+	// data for each module already on the manager.
+	for _, dataEvent := range event.Data {
+		if dataEvent.Path.HasPrefix(bundle.BundlesBasePath) {
+			return true
+		}
+	}
+	return false
+}
+
+func loadWasmResolversFromStore(ctx context.Context, store storage.Store, txn storage.Transaction) (map[*ast.Ref]*wasm.Resolver, error) {
+	bundleNames, err := bundle.ReadBundleNamesFromStore(ctx, store, txn)
+	if err != nil && !storage.IsNotFound(err) {
+		return nil, err
+	}
+
+	rawResolvers := map[*ast.Ref][]byte{}
+	for _, bundleName := range bundleNames {
+		wasmResolverConfigs, err := bundle.ReadWasmMetadataFromStore(ctx, store, txn, bundleName)
+		if err != nil && !storage.IsNotFound(err) {
+			return nil, err
+		}
+		rawModules, err := bundle.ReadWasmModulesFromStore(ctx, store, txn, bundleName)
+		if err != nil && !storage.IsNotFound(err) {
+			return nil, err
+		}
+
+		for _, wrc := range wasmResolverConfigs {
+			ref, err := ast.PtrRef(ast.DefaultRootDocument, wrc.Entrypoint)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse wasm module entrypoint '%s': %s", wrc.Entrypoint, err)
+			}
+			rawResolvers[&ref] = rawModules[wrc.Module]
+		}
+	}
+
+	resolvers := map[*ast.Ref]*wasm.Resolver{}
+	if len(rawResolvers) > 0 {
+		// Get a full snapshot of the current data to load into the wasm runtime
+		data, err := store.Read(ctx, txn, storage.Path{})
+		if err != nil {
+			return nil, fmt.Errorf("failed to initialize wasm runtime: %s", err)
+		}
+
+		for ref, bs := range rawResolvers {
+			resolver, err := wasm.New(bs, data)
+			if err != nil {
+				panic(err)
+			}
+			resolvers[ref] = resolver
+		}
+	}
+	return resolvers, nil
+}
+
+func (m *Manager) updateWasmResolversData(ctx context.Context, txn storage.Transaction) error {
+	m.wasmResolversMtx.Lock()
+	defer m.wasmResolversMtx.Unlock()
+
+	if len(m.wasmResolvers) > 0 {
+		// Get a full snapshot of the current data to load into the wasm runtime
+		data, err := m.Store.Read(ctx, txn, storage.Path{})
+		if err != nil {
+			return fmt.Errorf("failed to read current store data for wasm runtime: %s", err)
+		}
+
+		for _, resolver := range m.wasmResolvers {
+			err := resolver.SetData(data)
+			if err != nil {
+				return fmt.Errorf("failed to update wasm runtime data: %s", err)
+			}
+		}
+	}
+	return nil
 }
 
 // PublicKeys returns a public keys that can be used for verifying signed bundles.

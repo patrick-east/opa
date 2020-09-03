@@ -26,8 +26,11 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
+
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
+
+	"github.com/open-policy-agent/opa/resolver/wasm"
 
 	"github.com/open-policy-agent/opa/ast"
 	"github.com/open-policy-agent/opa/bundle"
@@ -116,6 +119,7 @@ type Server struct {
 	metrics                Metrics
 	defaultDecisionPath    string
 	interQueryBuiltinCache iCache.InterQueryCache
+	wasmResolvers          map[*ast.Ref]*wasm.Resolver
 }
 
 // Metrics defines the interface that the server requires for recording HTTP
@@ -696,12 +700,10 @@ func (s *Server) execQuery(ctx context.Context, r *http.Request, txn storage.Tra
 		rawInput = &x
 	}
 
-	compiler := s.getCompiler()
-
-	rego := rego.New(
+	opts := []func(*rego.Rego){
 		rego.Store(s.store),
 		rego.Transaction(txn),
-		rego.Compiler(compiler),
+		rego.Compiler(s.getCompiler()),
 		rego.ParsedQuery(parsedQuery),
 		rego.ParsedInput(input),
 		rego.Metrics(m),
@@ -710,7 +712,13 @@ func (s *Server) execQuery(ctx context.Context, r *http.Request, txn storage.Tra
 		rego.Runtime(s.runtime),
 		rego.UnsafeBuiltins(unsafeBuiltinsMap),
 		rego.InterQueryBuiltinCache(s.interQueryBuiltinCache),
-	)
+	}
+
+	for ref, r := range s.manager.GetWasmResolvers() {
+		opts = append(opts, rego.Resolver(*ref, r))
+	}
+
+	rego := rego.New(opts...)
 
 	output, err := rego.Eval(ctx)
 	if err != nil {
@@ -808,6 +816,7 @@ func (s *Server) reload(ctx context.Context, txn storage.Transaction, event stor
 	s.revisions = map[string]string{}
 	s.preparedEvalQueries = newCache(pqMaxCacheSize)
 	s.defaultDecisionPath = s.generateDefaultDecisionPath()
+	s.wasmResolvers = map[*ast.Ref]*wasm.Resolver{}
 
 	// read all bundle revisions from storage (if any exist)
 	names, err := bundle.ReadBundleNamesFromStore(ctx, s.store, txn)
@@ -900,11 +909,20 @@ func (s *Server) v0QueryPath(w http.ResponseWriter, r *http.Request, urlPath str
 		s.preparedEvalQueries.Insert(pqID, preparedQuery)
 	}
 
-	rs, err := preparedQuery.Eval(
-		ctx,
+	evalOpts := []rego.EvalOption{
 		rego.EvalTransaction(txn),
 		rego.EvalParsedInput(input),
 		rego.EvalMetrics(m),
+		rego.EvalInterQueryBuiltinCache(s.interQueryBuiltinCache),
+	}
+
+	for ref, r := range s.manager.GetWasmResolvers() {
+		evalOpts = append(evalOpts, rego.EvalResolver(*ref, r))
+	}
+
+	rs, err := preparedQuery.Eval(
+		ctx,
+		evalOpts...,
 	)
 
 	m.Timer(metrics.ServerHandler).Stop()
@@ -1198,13 +1216,21 @@ func (s *Server) v1DataGet(w http.ResponseWriter, r *http.Request) {
 		s.preparedEvalQueries.Insert(pqID, preparedQuery)
 	}
 
-	rs, err := preparedQuery.Eval(
-		ctx,
+	evalOpts := []rego.EvalOption{
 		rego.EvalTransaction(txn),
 		rego.EvalParsedInput(input),
 		rego.EvalMetrics(m),
 		rego.EvalQueryTracer(buf),
 		rego.EvalInterQueryBuiltinCache(s.interQueryBuiltinCache),
+	}
+
+	for ref, r := range s.manager.GetWasmResolvers() {
+		evalOpts = append(evalOpts, rego.EvalResolver(*ref, r))
+	}
+
+	rs, err := preparedQuery.Eval(
+		ctx,
+		evalOpts...,
 	)
 
 	m.Timer(metrics.ServerHandler).Stop()
@@ -1351,11 +1377,6 @@ func (s *Server) v1DataPost(w http.ResponseWriter, r *http.Request) {
 
 	logger := s.getDecisionLogger()
 
-	opts := []func(*rego.Rego){
-		rego.Compiler(s.getCompiler()),
-		rego.Store(s.store),
-	}
-
 	var buf *topdown.BufferTracer
 
 	if explainMode != types.ExplainOffV1 {
@@ -1369,6 +1390,11 @@ func (s *Server) v1DataPost(w http.ResponseWriter, r *http.Request) {
 	pqID += urlPath
 	preparedQuery, ok := s.getCachedPreparedEvalQuery(pqID, m)
 	if !ok {
+		opts := []func(*rego.Rego){
+			rego.Compiler(s.getCompiler()),
+			rego.Store(s.store),
+		}
+
 		rego, err := s.makeRego(ctx, partial, txn, input, urlPath, m, includeInstrumentation, buf, opts)
 
 		if err != nil {
@@ -1387,13 +1413,21 @@ func (s *Server) v1DataPost(w http.ResponseWriter, r *http.Request) {
 		s.preparedEvalQueries.Insert(pqID, preparedQuery)
 	}
 
-	rs, err := preparedQuery.Eval(
-		ctx,
+	evalOpts := []rego.EvalOption{
 		rego.EvalTransaction(txn),
 		rego.EvalParsedInput(input),
 		rego.EvalMetrics(m),
 		rego.EvalQueryTracer(buf),
 		rego.EvalInterQueryBuiltinCache(s.interQueryBuiltinCache),
+	}
+
+	for ref, r := range s.manager.GetWasmResolvers() {
+		evalOpts = append(evalOpts, rego.EvalResolver(*ref, r))
+	}
+
+	rs, err := preparedQuery.Eval(
+		ctx,
+		evalOpts...,
 	)
 
 	m.Timer(metrics.ServerHandler).Stop()

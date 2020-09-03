@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"path/filepath"
 	"regexp"
 	"sort"
 
@@ -242,8 +243,8 @@ func (c *Compiler) init() error {
 		return errors.New("bundle optimizations require at least one entrypoint")
 	}
 
-	if c.target == TargetWasm && len(c.entrypointrefs) != 1 {
-		return errors.New("wasm compilation requires exactly one entrypoint")
+	if c.target == TargetWasm && len(c.entrypointrefs) == 0 {
+		return errors.New("wasm compilation requires at least one entrypoint")
 	}
 
 	return nil
@@ -350,17 +351,62 @@ func (c *Compiler) compileWasm(ctx context.Context) error {
 	store := inmem.NewFromObject(c.bundle.Data)
 	resultSym := ast.NewTerm(wasmResultVar)
 
-	cr, err := rego.New(
-		rego.ParsedQuery(ast.NewBody(ast.Equality.Expr(resultSym, c.entrypointrefs[0]))),
-		rego.Compiler(c.compiler),
-		rego.Store(store),
-	).Compile(ctx)
+	for _, entrypoint := range c.entrypointrefs {
+		cr, err := rego.New(
+			rego.ParsedQuery(ast.NewBody(ast.Equality.Expr(resultSym, entrypoint))),
+			rego.Compiler(c.compiler),
+			rego.Store(store),
+		).Compile(ctx)
 
-	if err != nil {
-		return err
+		if err != nil {
+			return err
+		}
+
+		entrypointRef := entrypoint.Value.(ast.Ref)
+		entrypointPath, err := entrypointRef.Ptr()
+		if err != nil {
+			return err
+		}
+
+		modulePath := filepath.Join(entrypointPath, bundle.WasmFile)
+
+		c.bundle.WasmModules = append(c.bundle.WasmModules, bundle.WasmModuleFile{
+			URL:  modulePath,
+			Path: modulePath,
+			Raw:  cr.Bytes,
+		})
+		c.bundle.Manifest.WasmModules = append(c.bundle.Manifest.WasmModules, bundle.WasmResolver{
+			Module:     modulePath,
+			Entrypoint: entrypointPath,
+		})
+
+		// Remove the entrypoint from the rest of the bundle rego/data, it has
+		// been effectively replaced by the wasm module.
+		modulesToEdit := map[string]struct{}{}
+		for _, rule := range c.compiler.GetRulesExact(entrypointRef) {
+			modulesToEdit[rule.Loc().File] = struct{}{}
+		}
+		if len(modulesToEdit) > 0 {
+			for i := 0; i < len(c.bundle.Modules); i++ {
+				mf := &c.bundle.Modules[i]
+				if _, ok := modulesToEdit[mf.Path]; ok {
+
+					// Remove the original raw source, we're editing the AST
+					// directly so it wont be in sync anymore.
+					mf.Raw = nil
+
+					// Drop any rules that match the entrypoint path.
+					var rules []*ast.Rule
+					for _, rule := range mf.Parsed.Rules {
+						if !rule.Path().Equal(entrypoint.Value) {
+							rules = append(rules, rule)
+						}
+					}
+					mf.Parsed.Rules = rules
+				}
+			}
+		}
 	}
-
-	c.bundle.Wasm = cr.Bytes
 
 	return nil
 }

@@ -27,7 +27,7 @@ func MustWriteTarGz(files [][2]string) *bytes.Buffer {
 func WriteFile(tw *tar.Writer, path string, bs []byte) error {
 
 	hdr := &tar.Header{
-		Name:     "/" + strings.TrimLeft(path, "/"),
+		Name:     strings.TrimLeft(path, "/"),
 		Mode:     0600,
 		Typeflag: tar.TypeReg,
 		Size:     int64(len(bs)),

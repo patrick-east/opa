@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/open-policy-agent/golang-opa-wasm/opa"
+
 	"github.com/open-policy-agent/opa/ast"
 	"github.com/open-policy-agent/opa/resolver"
 )
@@ -58,6 +59,10 @@ func (r *Resolver) Eval(ctx context.Context, input resolver.Input) (resolver.Res
 	}
 
 	return resolver.Result{Value: v}, nil
+}
+
+func (r *Resolver) SetData(data interface{}) error {
+	return r.o.SetData(data)
 }
 
 func getResult(rs *opa.Result) (*interface{}, error) {

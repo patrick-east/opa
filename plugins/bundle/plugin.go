@@ -433,6 +433,7 @@ func (p *Plugin) activate(ctx context.Context, name string, b *bundle.Bundle) er
 			Ctx:      ctx,
 			Store:    p.manager.Store,
 			Txn:      txn,
+			TxnCtx:   params.Context,
 			Compiler: compiler,
 			Metrics:  p.status[name].Metrics,
 			Bundles:  map[string]*bundle.Bundle{name: b},
@@ -445,6 +446,7 @@ func (p *Plugin) activate(ctx context.Context, name string, b *bundle.Bundle) er
 		}
 
 		plugins.SetCompilerOnContext(params.Context, compiler)
+		plugins.SetWasmResolversOnContext(params.Context, opts.WasmResolvers)
 
 		return activateErr
 	})

@@ -6,41 +6,51 @@ package bundle
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"strings"
 
-	"github.com/open-policy-agent/opa/metrics"
-
 	"github.com/open-policy-agent/opa/ast"
+	"github.com/open-policy-agent/opa/metrics"
+	"github.com/open-policy-agent/opa/resolver/wasm"
 
 	"github.com/open-policy-agent/opa/storage"
 	"github.com/open-policy-agent/opa/util"
 )
 
-var bundlesBasePath = storage.MustParsePath("/system/bundles")
+var BundlesBasePath = storage.MustParsePath("/system/bundles")
 
 // Note: As needed these helpers could be memoized.
 
 // ManifestStoragePath is the storage path used for the given named bundle manifest.
 func ManifestStoragePath(name string) storage.Path {
-	return append(bundlesBasePath, name, "manifest")
+	return append(BundlesBasePath, name, "manifest")
 }
 
 func namedBundlePath(name string) storage.Path {
-	return append(bundlesBasePath, name)
+	return append(BundlesBasePath, name)
 }
 
 func rootsPath(name string) storage.Path {
-	return append(bundlesBasePath, name, "manifest", "roots")
+	return append(BundlesBasePath, name, "manifest", "roots")
 }
 
 func revisionPath(name string) storage.Path {
-	return append(bundlesBasePath, name, "manifest", "revision")
+	return append(BundlesBasePath, name, "manifest", "revision")
+}
+
+func wasmModulePath(name string) storage.Path {
+	return append(BundlesBasePath, name, "wasm")
+}
+
+func wasmEntrypointsPath(name string) storage.Path {
+	return append(BundlesBasePath, name, "manifest", "wasm")
 }
 
 // ReadBundleNamesFromStore will return a list of bundle names which have had their metadata stored.
 func ReadBundleNamesFromStore(ctx context.Context, store storage.Store, txn storage.Transaction) ([]string, error) {
-	value, err := store.Read(ctx, txn, bundlesBasePath)
+	value, err := store.Read(ctx, txn, BundlesBasePath)
 	if err != nil {
 		return nil, err
 	}
@@ -65,8 +75,7 @@ func WriteManifestToStore(ctx context.Context, store storage.Store, txn storage.
 	return write(ctx, store, txn, ManifestStoragePath(name), manifest)
 }
 
-func write(ctx context.Context, store storage.Store, txn storage.Transaction, path storage.Path, manifest Manifest) error {
-	var value interface{} = manifest
+func write(ctx context.Context, store storage.Store, txn storage.Transaction, path storage.Path, value interface{}) error {
 	if err := util.RoundTrip(&value); err != nil {
 		return err
 	}
@@ -92,6 +101,77 @@ func EraseManifestFromStore(ctx context.Context, store storage.Store, txn storag
 		return err
 	}
 	return nil
+}
+
+func writeWasmModulesToStore(ctx context.Context, store storage.Store, txn storage.Transaction, name string, b *Bundle) error {
+	basePath := wasmModulePath(name)
+	for _, wm := range b.WasmModules {
+		path := append(basePath, wm.Path)
+		err := write(ctx, store, txn, path, base64.StdEncoding.EncodeToString(wm.Raw))
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func eraseWasmModulesFromStore(ctx context.Context, store storage.Store, txn storage.Transaction, name string) error {
+	path := wasmModulePath(name)
+
+	err := store.Write(ctx, txn, storage.RemoveOp, path, nil)
+	if err != nil && !storage.IsNotFound(err) {
+		return err
+	}
+	return nil
+}
+
+func ReadWasmMetadataFromStore(ctx context.Context, store storage.Store, txn storage.Transaction, name string) ([]WasmResolver, error) {
+	path := wasmEntrypointsPath(name)
+	value, err := store.Read(ctx, txn, path)
+	if err != nil {
+		return nil, err
+	}
+
+	bs, err := json.Marshal(value)
+	if err != nil {
+		return nil, fmt.Errorf("corrupt wasm manifest data")
+	}
+
+	var wasmMetadata []WasmResolver
+
+	err = util.UnmarshalJSON(bs, &wasmMetadata)
+	if err != nil {
+		return nil, fmt.Errorf("corrupt wasm manifest data")
+	}
+
+	return wasmMetadata, nil
+}
+
+func ReadWasmModulesFromStore(ctx context.Context, store storage.Store, txn storage.Transaction, name string) (map[string][]byte, error) {
+	path := wasmModulePath(name)
+	value, err := store.Read(ctx, txn, path)
+	if err != nil {
+		return nil, err
+	}
+
+	encodedModules, ok := value.(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("corrupt wasm modules")
+	}
+
+	rawModules := map[string][]byte{}
+	for path, enc := range encodedModules {
+		encStr, ok := enc.(string)
+		if !ok {
+			return nil, fmt.Errorf("corrupt wasm modules")
+		}
+		bs, err := base64.StdEncoding.DecodeString(encStr)
+		if err != nil {
+			return nil, err
+		}
+		rawModules[path] = bs
+	}
+	return rawModules, nil
 }
 
 // ReadBundleRootsFromStore returns the roots in the specified bundle.
@@ -143,13 +223,15 @@ func readRevisionFromStore(ctx context.Context, store storage.Store, txn storage
 
 // ActivateOpts defines options for the Activate API call.
 type ActivateOpts struct {
-	Ctx          context.Context
-	Store        storage.Store
-	Txn          storage.Transaction
-	Compiler     *ast.Compiler
-	Metrics      metrics.Metrics
-	Bundles      map[string]*Bundle     // Optional
-	ExtraModules map[string]*ast.Module // Optional
+	Ctx           context.Context
+	Store         storage.Store
+	Txn           storage.Transaction
+	TxnCtx        *storage.Context
+	Compiler      *ast.Compiler
+	Metrics       metrics.Metrics
+	Bundles       map[string]*Bundle     // Optional
+	ExtraModules  map[string]*ast.Module // Optional
+	WasmResolvers map[*ast.Ref]*wasm.Resolver
 
 	legacy bool
 }
@@ -256,7 +338,67 @@ func activateBundles(opts *ActivateOpts) error {
 				return err
 			}
 		}
+
+		if err := writeWasmModulesToStore(opts.Ctx, opts.Store, opts.Txn, name, b); err != nil {
+			return err
+		}
 	}
+
+	// Lookup all bundles that exist in the store
+	bundleNames, err := ReadBundleNamesFromStore(opts.Ctx, opts.Store, opts.Txn)
+	if err != nil && !storage.IsNotFound(err) {
+		panic(err)
+	}
+
+	rawResolvers := map[*ast.Ref][]byte{}
+	for _, bundleName := range bundleNames {
+		var wasmResolverConfigs []WasmResolver
+		rawModules := map[string][]byte{}
+
+		// Save round-tripping the bundle that was just activated
+		if _, ok := opts.Bundles[bundleName]; ok {
+			wasmResolverConfigs = opts.Bundles[bundleName].Manifest.WasmModules
+			for _, wmf := range opts.Bundles[bundleName].WasmModules {
+				rawModules[wmf.Path] = wmf.Raw
+			}
+		} else {
+			wasmResolverConfigs, err = ReadWasmMetadataFromStore(opts.Ctx, opts.Store, opts.Txn, bundleName)
+			if err != nil && !storage.IsNotFound(err) {
+				return fmt.Errorf("failed to read wasm module manifest from store: %s", err)
+			}
+			rawModules, err = ReadWasmModulesFromStore(opts.Ctx, opts.Store, opts.Txn, bundleName)
+			if err != nil && !storage.IsNotFound(err) {
+				return fmt.Errorf("failed to read wasm modules from store: %s", err)
+			}
+		}
+
+		for _, wrc := range wasmResolverConfigs {
+			ref, err := ast.PtrRef(ast.DefaultRootDocument, wrc.Entrypoint)
+			if err != nil {
+				panic(fmt.Errorf("failed to parse wasm module entrypoint '%s': %s", wrc.Entrypoint, err))
+			}
+			rawResolvers[&ref] = rawModules[wrc.Module]
+		}
+	}
+
+	resolvers := map[*ast.Ref]*wasm.Resolver{}
+	if len(rawResolvers) > 0 {
+		// Get a full snapshot of the current data (including any from "outside" the bundles)
+		data, err := opts.Store.Read(opts.Ctx, opts.Txn, storage.Path{})
+		if err != nil {
+			return fmt.Errorf("failed to initialize wasm runtime: %s", err)
+		}
+
+		for ref, bs := range rawResolvers {
+			resolver, err := wasm.New(bs, data)
+			if err != nil {
+				panic(err)
+			}
+			resolvers[ref] = resolver
+		}
+	}
+
+	opts.WasmResolvers = resolvers
 
 	return nil
 }
@@ -280,6 +422,10 @@ func eraseBundles(ctx context.Context, store storage.Store, txn storage.Transact
 		}
 
 		if err := LegacyEraseManifestFromStore(ctx, store, txn); err != nil && !storage.IsNotFound(err) {
+			return nil, err
+		}
+
+		if err := eraseWasmModulesFromStore(ctx, store, txn, name); err != nil && !storage.IsNotFound(err) {
 			return nil, err
 		}
 	}
